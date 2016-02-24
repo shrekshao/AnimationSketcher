@@ -71,7 +71,7 @@ void * HelloMaya::creator()
 MStatus initializePlugin(MObject obj)
 {
 	MStatus stat;
-	MFnPlugin plugin(obj, "CIS660", "1.0", "Any");
+	MFnPlugin plugin(obj, "CIS660", "2.0", "Any");
 	stat = plugin.registerCommand("helloMaya", HelloMaya::creator);
 	if (!stat)
 	{
