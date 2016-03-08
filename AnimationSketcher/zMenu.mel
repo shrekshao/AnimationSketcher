@@ -1,3 +1,45 @@
+global proc AnimationSketcherMainMenu()
+{
+	if (`window -exists lsystemWindow`) deleteUI lsystemWindow;
+
+	window -title "LSystem" -widthHeight 550 400 lsystemWindow;
+	columnLayout;
+	text -l "Browse for grammar files";
+	button -l "Browse.." -command "loadGramarFile";
+
+	scrollField -wordWrap true sGrammar;
+
+	columnLayout -adjustableColumn true;
+
+	frameLayout -label "LSystem Parameters" -collapsable true;
+	columnLayout;
+	//slider
+	floatSliderGrp -label "iterations" -field true 
+	-minValue 1.0 -maxValue 100.0 
+	-value 3
+	iterationsSlider;
+
+	floatSliderGrp -label "Default step size" -field true 
+	-minValue 1.0 -maxValue 100.0 
+	-value 1 
+	stepSlider;
+
+	floatSliderGrp -label "Default angle" -field true 
+	-minValue 1.0 -maxValue 100.0 
+	-value 30 
+	angleSlider;
+
+	setParent ..;
+	setParent ..;
+	setParent ..;
+
+	button -l "Create" -command "generateTree";
+	button -l "Cancel";
+	
+	showWindow lsystemWindow;
+}
+
+
 global proc RandomNodeDefault()
 {
     string $cube[] = `polyCube`;
@@ -60,11 +102,12 @@ global string $nameMenu;
 global proc createMenu()
 {
     global string $nameMenu;
-    $nameMenu=`menu -label "LSystemInstance" -parent "MayaWindow"`;
+    $nameMenu=`menu -label "AnimationSketcher" -parent "MayaWindow"`;
     menuItem -label "Random Node Default" -command "RandomNodeDefault()";
     menuItem -label "Random Node Selected" -command "RandomNodeSelected()";
     menuItem -label "LSystem Node Default" -command "LSystemNodeDefault()";
     menuItem -label "LSystem Node Selected" -command "LSystemNodeSelected()";
+	menuItem -label "AnimationSketcher Menu" -command "AnimationSketcherMainMenu()";
 }
 
 global proc deleteMenu()

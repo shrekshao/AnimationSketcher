@@ -1,0 +1,78 @@
+if (`window -exists lsystemWindow`) deleteUI lsystemWindow;
+
+window -title "LSystem" -widthHeight 550 400 lsystemWindow;
+columnLayout;
+text -l "Browse for grammar files";
+button -l "Browse.." -command "loadGramarFile";
+
+scrollField -wordWrap true sGrammar;
+
+
+columnLayout -adjustableColumn true;
+
+frameLayout -label "LSystem Parameters" -collapsable true;
+columnLayout;
+//slider
+floatSliderGrp -label "iterations" -field true 
+-minValue 1.0 -maxValue 100.0 
+-value 3
+iterationsSlider;
+
+floatSliderGrp -label "Default step size" -field true 
+-minValue 1.0 -maxValue 100.0 
+-value 1 
+stepSlider;
+
+floatSliderGrp -label "Default angle" -field true 
+-minValue 1.0 -maxValue 100.0 
+-value 30 
+angleSlider;
+
+setParent ..;
+setParent ..;
+setParent ..;
+
+button -l "Create" -command "generateTree";
+button -l "Cancel";
+
+
+
+showWindow lsystemWindow;
+
+//proc
+global proc int importGrammar( string $filename, string $fileType)
+{
+    int $file_id = `fopen $filename "r"`; 
+    
+    string $data = `fread $file_id $data`;
+    
+    fclose $file_id;
+    
+    scrollField -e -cl sGrammar;
+    scrollField -e -text $data sGrammar;
+    
+    return 1;
+}
+
+global proc loadGramarFile(){
+    string $filename[] = `fileDialog2 -fileMode 1 -caption "Import Grammar"`;
+    if (1 == `size($filename)`)
+    {
+        importGrammar($filename[0], "");
+    }
+}
+
+global proc generateTree(){
+    float $iterations = `floatSliderGrp -q -v iterationsSlider`;
+    print $iterations;
+    float $step = `floatSliderGrp -q -v stepSlider`;
+    print $step;
+    float $angle = `floatSliderGrp -q -v angleSlider`;
+    print $angle;
+    
+    string $grammar = `scrollField -q -text sGrammar`;
+    
+    LSystemCmd -step $step -angle $angle -iterations $iterations -grammar $grammar;
+}
+    
+    
