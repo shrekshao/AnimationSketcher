@@ -26,7 +26,7 @@ MStatus initializePlugin(MObject obj)
 	//	return status;
 	//}
 
-	MGlobal::executeCommand("source \"" + plugin.loadPath() + "/zMenu.mel\"");
+	MGlobal::executeCommand("source \"" + plugin.loadPath() + "/../../AnimationSketcher/zMenu.mel\"");
 	MGlobal::executeCommand("createMenu();");
 
 	return status;
