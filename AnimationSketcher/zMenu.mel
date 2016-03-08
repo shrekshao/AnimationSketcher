@@ -1,0 +1,77 @@
+global proc RandomNodeDefault()
+{
+    string $cube[] = `polyCube`;
+    string $inst1 = `instancer`;
+    string $randnode = `createNode randomNode`;
+    connectAttr ($cube[0]+".matrix", $inst1+".inputHierarchy[0]");
+    connectAttr ($randnode+".outPoints", $inst1+".inputPoints");
+}
+
+global proc RandomNodeSelected()
+{
+    string $selected[] = `ls -sl`;
+    if(size($selected) > 0)
+    {
+        string $inst1 = `instancer`;
+        string $randnode = `createNode randomNode`;
+        connectAttr ($selected[0]+".matrix", $inst1+".inputHierarchy[0]");
+        connectAttr ($randnode+".outPoints", $inst1+".inputPoints");
+    }
+    else
+    {
+        print "Random Node: Nothing selected!";
+    }
+}
+
+global proc LSystemNodeDefault()
+{
+    string $cube[] = `polyCube`;
+    string $sphere[] = `polySphere`;
+    string $inst1 = `instancer`;
+    string $inst2 = `instancer`;
+    string $lsnode = `createNode LSystemInstanceNode`;
+    connectAttr ($cube[0]+".matrix",$inst1+".inputHierarchy[0]");
+    connectAttr ($sphere[0]+".matrix", $inst2+".inputHierarchy[0]");
+    connectAttr ($lsnode+".outBranches", $inst1+".inputPoints");
+    connectAttr ($lsnode+".outFlowers", $inst2+".inputPoints");
+}
+
+global proc LSystemNodeSelected()
+{
+    string $selected[] = `ls -sl`;
+    if(size($selected) >= 2)
+    {
+        string $inst1 = `instancer`;
+        string $inst2 = `instancer`;
+        string $lsnode = `createNode LSystemInstanceNode`;
+        connectAttr ($selected[0]+".matrix",$inst1+".inputHierarchy[0]");
+        connectAttr ($selected[1]+".matrix", $inst2+".inputHierarchy[0]");
+        connectAttr ($lsnode+".outBranches", $inst1+".inputPoints");
+        connectAttr ($lsnode+".outFlowers", $inst2+".inputPoints");
+    }
+    else
+    {
+        print "LSystem Node: Not enough geometries selected!";
+    }
+}
+
+global string $nameMenu;
+
+global proc createMenu()
+{
+    global string $nameMenu;
+    $nameMenu=`menu -label "LSystemInstance" -parent "MayaWindow"`;
+    menuItem -label "Random Node Default" -command "RandomNodeDefault()";
+    menuItem -label "Random Node Selected" -command "RandomNodeSelected()";
+    menuItem -label "LSystem Node Default" -command "LSystemNodeDefault()";
+    menuItem -label "LSystem Node Selected" -command "LSystemNodeSelected()";
+}
+
+global proc deleteMenu()
+{
+    global string $nameMenu;
+    deleteUI -m $nameMenu;
+}
+
+
+

@@ -135,10 +135,10 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="HelloMaya.cpp" />
+    <ClCompile Include="AnimationSketcher.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="HelloMaya.h" />
+    <ClInclude Include="AnimationSketcher.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
