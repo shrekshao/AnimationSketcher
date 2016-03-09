@@ -1,8 +1,82 @@
 global proc AnimationSketcherMainMenu()
 {
-	if (`window -exists lsystemWindow`) deleteUI lsystemWindow;
+	if (`window -exists animationSketcherWindow`) deleteUI animationSketcherWindow;
 
-	window -title "LSystem" -widthHeight 550 400 lsystemWindow;
+	window -title "Animation Sketcher" -widthHeight 600 480 animationSketcherWindow;
+	
+	/*
+	rowLayout 
+		-numberOfColumns 3 
+		-columnWidth3 150 300 150 
+		-columnAlign3 "right" "center" "center";
+	*/
+
+	/*
+	string $form = `formLayout -numberOfDivisions 100`;
+		text -l "3D Character" t_3dc;
+		textField -ed false -w 300 tf_3dc;
+		button -l "Bind Selection" -command "BindSelected3dCharacter" btn_3dc;
+
+		text -l "Trajectory" t_trajectory;
+		textField -ed false -w 300 tf_trajectory;
+		button -l "Bind Selection" -command "BindSelectTrajectory" btn_trajectory;
+
+	formLayout -edit
+		-attachForm t_3dc "top" 1 
+		-attachForm t_3dc "left" 10 
+		-attachForm tf_3dc "top" 1 
+		-attachForm tf_3dc "left" 100 
+		-attachForm btn_3dc "top" 1 
+		-attachForm btn_3dc "left" 450 
+		
+		-attachForm t_trajectory "top" 30 
+		-attachForm t_trajectory "left" 10 
+		-attachForm tf_trajectory "top" 30 
+		-attachForm tf_trajectory "left" 100 
+		-attachForm btn_trajectory "top" 30 
+		-attachForm btn_trajectory "left" 450 
+	$form;
+	*/
+
+	columnLayout -adj 1;
+
+	rowLayout 
+		-numberOfColumns 3 
+		-columnWidth3 150 300 150 
+		-columnAlign3 "right" "center" "center";
+
+	text -l "3D Character" t_3dc;
+	textField -ed false -w 300 tf_3dc;
+	button -l "Bind Selection" -command "BindSelected3dCharacter" btn_3dc;
+
+	setParent ..;
+
+	rowLayout 
+		-numberOfColumns 3 
+		-columnWidth3 150 300 150 
+		-columnAlign3 "right" "center" "center";
+
+	text -l "Trajectory" t_trajectory;
+	textField -ed false -w 300 tf_trajectory;
+	button -l "Bind Selection" -command "BindSelectTrajectory" btn_trajectory;
+
+	setParent ..;
+
+
+	rowLayout 
+		-numberOfColumns 3 
+		-columnWidth3 150 300 150 
+		-columnAlign3 "right" "center" "center";
+
+	text -l "Shape matching sketch" t_shape;
+	textField -ed false -w 300 tf_shape;
+	button -l "Add Selection" -command "AddShapeMatchingSketch" btn_shape;
+
+	setParent ..;
+
+
+
+	/*
 	columnLayout;
 	text -l "Browse for grammar files";
 	button -l "Browse.." -command "loadGramarFile";
@@ -35,8 +109,9 @@ global proc AnimationSketcherMainMenu()
 
 	button -l "Create" -command "generateTree";
 	button -l "Cancel";
-	
-	showWindow lsystemWindow;
+	*/
+
+	showWindow animationSketcherWindow;
 }
 
 
