@@ -62,7 +62,6 @@ global proc AnimationSketcherMainMenu()
 
 	setParent ..;
 
-
 	rowLayout 
 		-numberOfColumns 3 
 		-columnWidth3 150 300 150 
@@ -74,7 +73,10 @@ global proc AnimationSketcherMainMenu()
 
 	setParent ..;
 
+	tearOffPanel "Graph Editor" "graphEditor" true;
 
+
+	//translation: pathAnimation
 
 	/*
 	columnLayout;
