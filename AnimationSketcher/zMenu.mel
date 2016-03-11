@@ -119,7 +119,7 @@ global proc AnimationSketcherMainMenu()
 	showWindow animationSketcherWindow;
 }
 
-
+/*
 global proc RandomNodeDefault()
 {
     string $cube[] = `polyCube`;
@@ -176,6 +176,7 @@ global proc LSystemNodeSelected()
         print "LSystem Node: Not enough geometries selected!";
     }
 }
+*/
 
 global string $nameMenu;
 
@@ -183,10 +184,7 @@ global proc createMenu()
 {
     global string $nameMenu;
     $nameMenu=`menu -label "AnimationSketcher" -parent "MayaWindow"`;
-    menuItem -label "Random Node Default" -command "RandomNodeDefault()";
-    menuItem -label "Random Node Selected" -command "RandomNodeSelected()";
-    menuItem -label "LSystem Node Default" -command "LSystemNodeDefault()";
-    menuItem -label "LSystem Node Selected" -command "LSystemNodeSelected()";
+
 	menuItem -label "AnimationSketcher Menu" -command "AnimationSketcherMainMenu()";
 }
 
