@@ -21,12 +21,39 @@ global proc BindSelectTrajectory()
     }
 }
 
+global proc BindSelectedJoint()
+{
+	string $selected[] = `ls -sl`;
+    if(size($selected) > 0)
+    {
+		
+        textField -e -text $selected[0] tf_rootJoint;
+    }
+}
 
 global proc ApplyAnimation()
 {
 	string $character = `textField -query -text tf_3dc`;
 	string $curveName = `textField -query -text tf_trajectory`;
-	pathAnimation -startTimeU `playbackOptions -query -minTime` -endTimeU `playbackOptions -query -maxTime` -c $curveName $character;
+    string $rootJointName = `textField -query -text tf_rootJoint`;
+    
+    string $childrenJoints[] = `listRelatives -ad $rootJointName`;
+    string $leafJointName = $childrenJoints[0];
+    select -r $rootJointName $leafJointName;
+    string $ikHandlesNames[] = `ikHandle -sol ikSplineSolver -ns 30`;
+    string $ikHandleName = $ikHandlesNames[0];
+    string $ikSplineName = $ikHandlesNames[2];
+
+    xform -cp $ikSplineName; //Center spline curve pivot
+
+    select -r $ikHandleName;
+    setAttr ($ikHandleName+".dTwistControlEnable") 1;
+
+    //pathAnimation -startTimeU `playbackOptions -query -minTime` -endTimeU `playbackOptions -query -maxTime` -c $curveName $character;
+    select -r $ikSplineName $curveName;
+    pathAnimation -fractionMode true -follow true -followAxis z -upAxis y -worldUpType "vector" -worldUpVector 0 1 0 -inverseUp false -inverseFront false -bank false -startTimeU `playbackOptions -query -minTime` -endTimeU  `playbackOptions -query -maxTime`;
+
+    flow -divisions 2 2 30 -objectCentered 1 -localCompute 0 -localDivisions 2 2 2 $ikSplineName;
 }
 
 
@@ -43,7 +70,7 @@ global proc AnimationSketcherMainMenu()
 		-columnWidth3 150 300 150 
 		-columnAlign3 "right" "center" "center";
 
-	text -l "3D Character" t_3dc;
+	text -l "3D Character Transform" t_3dc;
 	textField -ed false -w 300 tf_3dc;
 	button -l "Bind Selected Character" -command "BindSelected3dCharacter" btn_3dc;
 
@@ -54,7 +81,7 @@ global proc AnimationSketcherMainMenu()
 		-columnWidth3 150 300 150 
 		-columnAlign3 "right" "center" "center";
 
-	text -l "Trajectory" t_trajectory;
+	text -l "Trajectory Curve" t_trajectory;
 	textField -ed false -w 300 tf_trajectory;
 	button -l "Bind Selected Curve" -command "BindSelectTrajectory" btn_trajectory;
 
@@ -66,9 +93,9 @@ global proc AnimationSketcherMainMenu()
 		-columnAlign3 "right" "center" "center";
 
 	//TODO: this should be a table, a list of curves
-	text -l "Shape matching sketch" t_shape;
-	textField -ed false -w 300 tf_shape;
-	button -l "Add Selection" -command "AddShapeMatchingSketch" btn_shape;
+	text -l "Shape Root Joint" t_rootJoint;
+	textField -ed false -w 300 tf_rootJoint;
+	button -l "Bind Selected Joint" -command "BindSelectedJoint" btn_rootJoint;
 
 	setParent ..;
 
