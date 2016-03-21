@@ -56,6 +56,33 @@ global proc ApplyAnimation()
     flow -divisions 2 2 30 -objectCentered 1 -localCompute 0 -localDivisions 2 2 2 $ikSplineName;
 }
 
+global proc ApplyAnimationCpp()
+{
+    string $character = `textField -query -text tf_3dc`;
+	string $curveName = `textField -query -text tf_trajectory`;
+    string $rootJointName = `textField -query -text tf_rootJoint`;
+    
+    // Create an anim curve to define how the motion progresses along
+    // the path. Here we assume the animation is 114 frames long and
+    // progresses linearly in time. (Add UI to allow modifications the anim curve?)
+    string $ac = `createNode animCurveTU -n "animCurve"`;
+    setKeyframe -t 1 -v 0 $ac;
+    setKeyframe -t 114 -v 1 $ac;
+
+    // Create a motionPathNode and connect the path and anim curve.
+    string $mp = `createNode motionPathNode`;
+    setAttr ($mp+".fractionMode") true;
+    connectAttr ($ac+".output") ($mp+".uValue");
+    connectAttr ($curveName+".worldSpace[0]") ($mp+".geometryPath");
+
+    connectAttr ($mp+".allCoordinates") ($character+".translate");
+    connectAttr ($mp+".rotate") ($character+".rotate");
+    
+    // Add rotation so the character follows the path:
+    // 1) Turn on the "follow" attribute to enable rotation.
+    setAttr ($mp+".follow") 1;
+}
+
 
 global proc AnimationSketcherMainMenu()
 {
@@ -70,7 +97,7 @@ global proc AnimationSketcherMainMenu()
 		-columnWidth3 150 300 150 
 		-columnAlign3 "right" "center" "center";
 
-	text -l "3D Character Transform" t_3dc;
+	text -l "3D Character" t_3dc;
 	textField -ed false -w 300 tf_3dc;
 	button -l "Bind Selected Character" -command "BindSelected3dCharacter" btn_3dc;
 
@@ -103,18 +130,13 @@ global proc AnimationSketcherMainMenu()
 	rowLayout 
 		-numberOfColumns 6;
 
-	button -l "Apply" -command "ApplyAnimation" btn_apply;
+	button -l "Apply" -command "ApplyAnimationCpp" btn_apply;
 	button -l "Cancel" btn_cancel;
 
 	setParent ..;
 
 	//the animation curve editor
 	tearOffPanel "Graph Editor" "graphEditor" true;
-
-
-
-
-
 
 	showWindow animationSketcherWindow;
 }

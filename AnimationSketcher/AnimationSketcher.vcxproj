@@ -18,6 +18,13 @@
       <Platform>x64</Platform>
     </ProjectConfiguration>
   </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="CMotionPathNode.cpp" />
+    <ClCompile Include="PluginMain.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="CMotionPathNode.h" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{ECF0F344-F257-4563-A213-45CBBF90CF22}</ProjectGuid>
     <RootNamespace>MayaHelloWorld</RootNamespace>
@@ -134,12 +141,6 @@
       <AdditionalOptions>/export:initializePlugin /export:uninitializePlugin %(AdditionalOptions)</AdditionalOptions>
     </Link>
   </ItemDefinitionGroup>
-  <ItemGroup>
-    <ClCompile Include="AnimationSketcher.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="AnimationSketcher.h" />
-  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
