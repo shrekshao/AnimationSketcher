@@ -34,21 +34,20 @@ global proc BindSelectedJoint()
 
 //----- Bind LOA ----------
 
-/*
 // return: curveIntersect Node
-global string proc GetIntersectNode(string $c1, string $c2)
+global proc string GetIntersectNode(string $c1, string $c2)
 {
 	//TODO: use direction, active view direction
-
-	return `curveIntersect $c1 $c2`;
+	string $node = `curveIntersect $c1 $c2`;
+	return $node;
 }
-*/
+
 
 
 //use `pointOnCurve` to get position
 
 
-
+// LOA List
 
 global proc AddSelectedLOA()
 {
