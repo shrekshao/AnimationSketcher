@@ -31,6 +31,61 @@ global proc BindSelectedJoint()
     }
 }
 
+
+//----- Bind LOA ----------
+
+/*
+// return: curveIntersect Node
+global string proc GetIntersectNode(string $c1, string $c2)
+{
+	//TODO: use direction, active view direction
+
+	return `curveIntersect $c1 $c2`;
+}
+*/
+
+
+//use `pointOnCurve` to get position
+
+
+
+
+global proc AddSelectedLOA()
+{
+	string $selected[] = `ls -sl`;
+    if(size($selected) > 0)
+    {
+		textScrollList -e -append $selected[0] -sc "OnSelectLOAListItem" list_loa;
+    }
+}
+
+global proc RemoveSelectedLOA()
+{
+	string $selected[] = `ls -sl`;
+    if(size($selected) > 0)
+    {
+		textScrollList -e -removeItem $selected[0] list_loa;
+    }
+}
+
+global proc CleanLOAList()
+{
+	textScrollList -e -ra list_loa;
+}
+
+
+global proc OnSelectLOAListItem()
+{
+	//string $stextScrollList
+	select -r `textScrollList -q -selectItem list_loa`;
+}
+
+//----------------------------
+
+
+
+
+
 global proc ApplyAnimation()
 {
 	string $character = `textField -query -text tf_3dc`;
@@ -126,14 +181,35 @@ global proc AnimationSketcherMainMenu()
 
 	setParent ..;
 
+	//----- LOA menu list
+	rowLayout;
+	text -l "Line of Actions List";
+	setParent ..;
+
+
+	rowLayout
+		-numberOfColumns 2;
+
+	textScrollList list_loa;
+
+	columnLayout;
+	button -l "Add LOA" -command "AddSelectedLOA" btn_add_loa;
+	button -l "Remove LOA" -command "RemoveSelectedLOA" btn_remove_loa;
+	button -l "Clean" -command "CleanLOAList" btn_clean_loa;
+
+	setParent ..;
+	setParent ..;
+
 
 	rowLayout 
 		-numberOfColumns 6;
 
 	button -l "Apply" -command "ApplyAnimationCpp" btn_apply;
+	
 	button -l "Cancel" btn_cancel;
 
 	setParent ..;
+
 
 	//the animation curve editor
 	tearOffPanel "Graph Editor" "graphEditor" true;
