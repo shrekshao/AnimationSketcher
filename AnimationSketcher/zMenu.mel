@@ -83,8 +83,6 @@ global proc OnSelectLOAListItem()
 
 
 
-
-
 global proc ApplyAnimation()
 {
 	string $character = `textField -query -text tf_3dc`;
@@ -114,7 +112,8 @@ global proc ApplyAnimationCpp()
 {
     string $character = `textField -query -text tf_3dc`;
 	string $curveName = `textField -query -text tf_trajectory`;
-    
+    string $rootJointName = `textField -query -text tf_rootJoint`;
+
     /*
     // Create an anim curve to define how the motion progresses along
     // the path. Here we assume the animation is 114 frames long and
@@ -137,6 +136,7 @@ global proc ApplyAnimationCpp()
     setAttr ($mp+".follow") 1;
     //setAttr ($mp+".offset") -type "string" $rootJointName;
     */
+
     string $childrenJoints[] = `listRelatives -ad $rootJointName`;
     string $leafJointName = $childrenJoints[0];
     select -r $rootJointName $leafJointName;
@@ -223,64 +223,6 @@ global proc AnimationSketcherMainMenu()
 	showWindow animationSketcherWindow;
 }
 
-/*
-global proc RandomNodeDefault()
-{
-    string $cube[] = `polyCube`;
-    string $inst1 = `instancer`;
-    string $randnode = `createNode randomNode`;
-    connectAttr ($cube[0]+".matrix", $inst1+".inputHierarchy[0]");
-    connectAttr ($randnode+".outPoints", $inst1+".inputPoints");
-}
-
-global proc RandomNodeSelected()
-{
-    string $selected[] = `ls -sl`;
-    if(size($selected) > 0)
-    {
-        string $inst1 = `instancer`;
-        string $randnode = `createNode randomNode`;
-        connectAttr ($selected[0]+".matrix", $inst1+".inputHierarchy[0]");
-        connectAttr ($randnode+".outPoints", $inst1+".inputPoints");
-    }
-    else
-    {
-        print "Random Node: Nothing selected!";
-    }
-}
-
-global proc LSystemNodeDefault()
-{
-    string $cube[] = `polyCube`;
-    string $sphere[] = `polySphere`;
-    string $inst1 = `instancer`;
-    string $inst2 = `instancer`;
-    string $lsnode = `createNode LSystemInstanceNode`;
-    connectAttr ($cube[0]+".matrix",$inst1+".inputHierarchy[0]");
-    connectAttr ($sphere[0]+".matrix", $inst2+".inputHierarchy[0]");
-    connectAttr ($lsnode+".outBranches", $inst1+".inputPoints");
-    connectAttr ($lsnode+".outFlowers", $inst2+".inputPoints");
-}
-
-global proc LSystemNodeSelected()
-{
-    string $selected[] = `ls -sl`;
-    if(size($selected) >= 2)
-    {
-        string $inst1 = `instancer`;
-        string $inst2 = `instancer`;
-        string $lsnode = `createNode LSystemInstanceNode`;
-        connectAttr ($selected[0]+".matrix",$inst1+".inputHierarchy[0]");
-        connectAttr ($selected[1]+".matrix", $inst2+".inputHierarchy[0]");
-        connectAttr ($lsnode+".outBranches", $inst1+".inputPoints");
-        connectAttr ($lsnode+".outFlowers", $inst2+".inputPoints");
-    }
-    else
-    {
-        print "LSystem Node: Not enough geometries selected!";
-    }
-}
-*/
 
 global string $nameMenu;
 
