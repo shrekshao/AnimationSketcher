@@ -114,7 +114,6 @@ global proc ApplyAnimationCpp()
 {
     string $character = `textField -query -text tf_3dc`;
 	string $curveName = `textField -query -text tf_trajectory`;
-    string $rootJointName = `textField -query -text tf_rootJoint`;
     
     // Create an anim curve to define how the motion progresses along
     // the path. Here we assume the animation is 114 frames long and
@@ -203,7 +202,7 @@ global proc AnimationSketcherMainMenu()
 	rowLayout 
 		-numberOfColumns 6;
 
-	button -l "Apply" -command "ApplyAnimationCpp" btn_apply;
+	button -l "Apply" -command "ApplyAnimation" btn_apply;
 	
 	button -l "Cancel" btn_cancel;
 
