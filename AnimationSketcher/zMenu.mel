@@ -115,6 +115,7 @@ global proc ApplyAnimationCpp()
     string $character = `textField -query -text tf_3dc`;
 	string $curveName = `textField -query -text tf_trajectory`;
     
+    /*
     // Create an anim curve to define how the motion progresses along
     // the path. Here we assume the animation is 114 frames long and
     // progresses linearly in time. (Add UI to allow modifications the anim curve?)
@@ -134,6 +135,13 @@ global proc ApplyAnimationCpp()
     // Add rotation so the character follows the path:
     // 1) Turn on the "follow" attribute to enable rotation.
     setAttr ($mp+".follow") 1;
+    //setAttr ($mp+".offset") -type "string" $rootJointName;
+    */
+    string $childrenJoints[] = `listRelatives -ad $rootJointName`;
+    string $leafJointName = $childrenJoints[0];
+    select -r $rootJointName $leafJointName;
+    createNode ikSolverNode;
+    ikHandle -sol ikSolverNode -sj $rootJointName -ee $leafJointName;
 }
 
 

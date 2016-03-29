@@ -18,15 +18,10 @@ public:
 	static  void*		creator();
 	static  MStatus		initialize();
 
-	// Member variables...
-	//
-	static	MObject		offset;			// The "offset" attribute
-	static	MObject		wobbleRate;		// The "wobbleRate" attribute
-
 	static	MTypeId		id;				// The IFF type id
 
 private:
 	static MStatus		affectsOutput(MObject& attr);
 };
 
-#endif
+#endif // _C_MOTION_PATH_NODE_H_

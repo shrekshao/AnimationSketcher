@@ -12,6 +12,9 @@
     <Filter Include="Source Files\CMotionPathNode">
       <UniqueIdentifier>{3608a694-ae53-421e-bb20-b31ff89f1eee}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\CIKSolverNode">
+      <UniqueIdentifier>{99c50255-406d-47f7-8280-113405528ba9}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="PluginMain.cpp">
@@ -20,10 +23,16 @@
     <ClCompile Include="CMotionPathNode.cpp">
       <Filter>Source Files\CMotionPathNode</Filter>
     </ClCompile>
+    <ClCompile Include="CIKSolverNode.cpp">
+      <Filter>Source Files\CIKSolverNode</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CMotionPathNode.h">
       <Filter>Source Files\CMotionPathNode</Filter>
+    </ClInclude>
+    <ClInclude Include="CIKSolverNode.h">
+      <Filter>Source Files\CIKSolverNode</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
