@@ -21,11 +21,13 @@
   <ItemGroup>
     <ClCompile Include="CIKSolverNode.cpp" />
     <ClCompile Include="CMotionPathNode.cpp" />
+    <ClCompile Include="CurveIKCmd.cpp" />
     <ClCompile Include="PluginMain.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CIKSolverNode.h" />
     <ClInclude Include="CMotionPathNode.h" />
+    <ClInclude Include="CurveIKCmd.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{ECF0F344-F257-4563-A213-45CBBF90CF22}</ProjectGuid>

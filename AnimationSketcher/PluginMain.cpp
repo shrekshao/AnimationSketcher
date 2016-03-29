@@ -6,6 +6,8 @@
 #include "CMotionPathNode.h"
 #include "CIKSolverNode.h"
 
+#include "CurveIKCmd.h"
+
 //#define EXPORT _declspec(dllexport)
 
 MStatus initializePlugin(MObject obj)
@@ -13,6 +15,14 @@ MStatus initializePlugin(MObject obj)
 	MStatus   status = MStatus::kSuccess;
 	MFnPlugin plugin(obj, "Animation Sketcher", "1.0", "Any");
 
+	//register command
+	status = plugin.registerCommand("CurveIKCmd", CurveIKCmd::creator);
+	if (!status) {
+		status.perror("registerCommand");
+		return status;
+	}
+
+	//register node
 	status = plugin.registerNode(
 		"motionPathNode", CMotionPathNode::id, CMotionPathNode::creator, CMotionPathNode::initialize,
 		MPxNode::kMotionPathNode);
@@ -40,6 +50,14 @@ MStatus uninitializePlugin(MObject obj)
 	MStatus   status = MStatus::kSuccess;
 	MFnPlugin plugin(obj);
 
+	//deregister command
+	status = plugin.deregisterCommand("CurveIKCmd");
+	if (!status) {
+		status.perror("deregisterCommand");
+		return status;
+	}
+
+	//deregister node
 	status = plugin.deregisterNode(CMotionPathNode::id);
 	if (!status) {
 		status.perror("deregister motionPathNode");

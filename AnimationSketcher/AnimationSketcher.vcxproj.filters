@@ -26,12 +26,18 @@
     <ClCompile Include="CIKSolverNode.cpp">
       <Filter>Source Files\CIKSolverNode</Filter>
     </ClCompile>
+    <ClCompile Include="CurveIKCmd.cpp">
+      <Filter>Source Files\CMotionPathNode</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CMotionPathNode.h">
       <Filter>Source Files\CMotionPathNode</Filter>
     </ClInclude>
     <ClInclude Include="CIKSolverNode.h">
+      <Filter>Source Files\CIKSolverNode</Filter>
+    </ClInclude>
+    <ClInclude Include="CurveIKCmd.h">
       <Filter>Source Files\CIKSolverNode</Filter>
     </ClInclude>
   </ItemGroup>
