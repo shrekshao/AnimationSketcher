@@ -18,23 +18,13 @@
 #define ALMOST_ZERO	1.0e-5
 #define	TWO_PI		( 2.0 * 3.1415927 )
 
-// IFF type ID
-// Each node requires a unique identifier which is used by
-// MFnDependencyNode::create() to identify which node to create, and by
-// the Maya file format.
-//
-// For local testing of nodes you can use any identifier between
-// 0x00000000 and 0x0007ffff, but for any node that you plan to use for
-// more permanent purposes, you should get a universally unique id from
-// Autodesk Support. You will be assigned a unique range that you can manage
-// on your own.
-//
-MTypeId CMotionPathNode::id(0x0008002D);
+MTypeId CMotionPathNode::id(0x00080020);
 
 // This node does not need to perform any special actions on creation or
 // destruction
 //
 CMotionPathNode::CMotionPathNode()
+: MPxMotionPathNode()
 {
 }
 CMotionPathNode::~CMotionPathNode()
@@ -115,7 +105,7 @@ MStatus CMotionPathNode::compute(const MPlug& plug, MDataBlock& data)
 //
 void* CMotionPathNode::creator()
 {
-	return(new CMotionPathNode());
+	return new CMotionPathNode();
 }
 
 // The initialize method is called only once when the node is first
