@@ -31,6 +31,14 @@ global proc BindSelectedJoint()
     }
 }
 
+global proc BindSelectedJointEnd()
+{
+	string $selected[] = `ls -sl`;
+    if(size($selected) > 0)
+    {
+        textField -e -text $selected[0] tf_endJoint;
+    }
+}
 
 //----- Bind LOA ----------
 
@@ -89,7 +97,10 @@ global proc DeformToLOA()
 {
 	select -r `textScrollList -q -selectItem list_loa`;
 
-	CurveIKCmd;
+	string $root = `textField -query -text tf_rootJoint`;
+	string $end = `textField -query -text tf_endJoint`;
+
+	CurveIKCmd -root $root -end $end;
 }
 
 
@@ -139,6 +150,33 @@ global proc ApplyAnimationCpp()
 }
 
 
+global proc ApplyMotionPathNode()
+{
+    string $character = `textField -query -text tf_3dc`;
+	string $curveName = `textField -query -text tf_trajectory`;
+    string $rootJointName = `textField -query -text tf_rootJoint`;
+    
+    // Create an anim curve to define how the motion progresses along
+    // the path. Here we assume the animation is 114 frames long and
+    // progresses linearly in time. (Add UI to allow modifications the anim curve?)
+    string $ac = `createNode animCurveTU -n "animCurve"`;
+    setKeyframe -t 1 -v 0 $ac;
+    setKeyframe -t 114 -v 1 $ac;
+
+    // Create a motionPathNode and connect the path and anim curve.
+    string $mp = `createNode motionPathNode`;
+    setAttr ($mp+".fractionMode") true;
+    connectAttr ($ac+".output") ($mp+".uValue");
+    connectAttr ($curveName+".worldSpace[0]") ($mp+".geometryPath");
+
+    connectAttr ($mp+".allCoordinates") ($character+".translate");
+    connectAttr ($mp+".rotate") ($character+".rotate");
+    
+    // Add rotation so the character follows the path:
+    // 1) Turn on the "follow" attribute to enable rotation.
+    setAttr ($mp+".follow") 1;
+}
+
 global proc AnimationSketcherMainMenu()
 {
 	if (`window -exists animationSketcherWindow`) deleteUI animationSketcherWindow;
@@ -174,12 +212,27 @@ global proc AnimationSketcherMainMenu()
 		-columnWidth3 150 300 150 
 		-columnAlign3 "right" "center" "center";
 
-	//TODO: this should be a table, a list of curves
 	text -l "Shape Root Joint" t_rootJoint;
 	textField -ed false -w 300 tf_rootJoint;
 	button -l "Bind Selected Joint" -command "BindSelectedJoint" btn_rootJoint;
 
 	setParent ..;
+
+	rowLayout 
+		-numberOfColumns 3 
+		-columnWidth3 150 300 150 
+		-columnAlign3 "right" "center" "center";
+
+	text -l "Shape End effector Joint" t_endJoint;
+	textField -ed false -w 300 tf_endJoint;
+	button -l "Bind Selected Joint" -command "BindSelectedJointEnd" btn_endJoint;
+
+	setParent ..;
+
+
+
+
+
 
 	//----- LOA menu list
 	rowLayout;
@@ -207,6 +260,7 @@ global proc AnimationSketcherMainMenu()
 		-numberOfColumns 6;
 
 	button -l "Apply" -command "ApplyAnimation" btn_apply;
+	button -l "Apply2" -command "ApplyMotionPathNode" btn_apply2;
 
 	button -l "IKNodeTest" -command "ApplyAnimationCpp" btn_ik_node_test;
 	

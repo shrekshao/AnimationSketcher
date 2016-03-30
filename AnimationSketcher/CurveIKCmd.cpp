@@ -45,7 +45,13 @@ static MVector getPosition(MFnNurbsCurve & curve, double uVal)
 	//return (minPos + uVal * (maxPos - minPos));
 
 	MPoint p;
-	curve.getPointAtParam(uVal, p);
+	//curve.getPointAtParam(uVal * (double)(curve.numCVs() - 1), p);
+
+	double u = curve.findParamFromLength(uVal * curve.length());
+	curve.getPointAtParam(u, p);
+
+	
+
 	return p;
 }
 
@@ -58,18 +64,20 @@ MStatus CurveIKCmd::doIt(const MArgList& args)
 	MStatus stat;
 
 	//test
-	MString skeletonName;
+	MString rootName, endEffectorName;
 	MSelectionList curveList;
 	for (int i = 0; i < args.length(); i++)
 	{
-		if (MString("-name") == args.asString(i, &stat)
+		if (MString("-root") == args.asString(i, &stat)
 			&& MS::kSuccess == stat)
 		{
-			skeletonName = args.asString(++i, &stat);
-			if (MS::kSuccess == stat)
-			{
-				//curveList.add(args.asString(++i, &stat));
-			}
+			rootName = args.asString(++i, &stat);
+		}
+
+		if (MString("-end") == args.asString(i, &stat)
+			&& MS::kSuccess == stat)
+		{
+			endEffectorName = args.asString(++i, &stat);
 		}
 
 		/*
@@ -120,7 +128,7 @@ MStatus CurveIKCmd::doIt(const MArgList& args)
 	MDagPath path;
 	curve_list.getDagPath(0, path);
 	MFnNurbsCurve nurbCurve(path);
-
+	
 
 
 	// 2. select joint and create handle
@@ -135,11 +143,33 @@ MStatus CurveIKCmd::doIt(const MArgList& args)
 
 	//MFnIkHandle fnHandle(it.currentItem());
 
-	MItDag it(MItDag::kDepthFirst, MFn::kIkHandle);
 
-	MFnIkHandle fnHandle(it.currentItem());
+	//MItDag it(MItDag::kDepthFirst, MFn::kIkHandle);
+	//MFnIkHandle fnHandle(it.currentItem());
+	MDagPath rootJointDagPath, leafJointDagPath;
+	{
+		MSelectionList list;
+		MGlobal::selectByName(MString(rootName), MGlobal::kReplaceList);
+		stat = MGlobal::getActiveSelectionList(list);
+		list.getDagPath(0, rootJointDagPath);
 
-	std::vector<MPoint> m_localJointsPos;
+		MGlobal::selectByName(MString(endEffectorName), MGlobal::kReplaceList);
+		stat = MGlobal::getActiveSelectionList(list);
+		list.getDagPath(0, leafJointDagPath);
+	}
+	MFnIkHandle fnHandle;
+	fnHandle.create(rootJointDagPath, leafJointDagPath);
+
+
+
+
+
+
+	//MItDag it(MItDag::kDepthFirst, MFn::kIkHandle);
+
+	//MFnIkHandle fnHandle(it.currentItem());
+
+	static std::vector<MPoint> m_localJointsPos;
 
 
 
@@ -174,7 +204,8 @@ MStatus CurveIKCmd::doIt(const MArgList& args)
 	MPoint startJointPos = MFnIkJoint(jointsDagPaths.front()).getTranslation(MSpace::kWorld);
 
 	MVector startToEndEff = m_localJointsPos.back() - m_localJointsPos.front();
-	double curveLength = (getPosition(nurbCurve, 1.0) - getPosition(nurbCurve, 0.0)).length();
+	//double curveLength = (getPosition(nurbCurve, 1.0) - getPosition(nurbCurve, 0.0)).length();
+	double curveLength = nurbCurve.length();
 	double chainLength = startToEndEff.length(); // in local space.
 	double stretchFactor = curveLength / chainLength;
 

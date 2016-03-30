@@ -9,7 +9,6 @@ class CurveIKCmd : public MPxCommand
 {
 private:
 	//variables
-
 public:
 	CurveIKCmd();
 	virtual ~CurveIKCmd();
