@@ -21,6 +21,8 @@
 #include <maya/MFnIkEffector.h>
 #include <maya/MFnIkJoint.h>
 
+#include <maya/MSelectionList.h>
+
 #include <vector>
 
 using namespace std;
@@ -34,15 +36,43 @@ CurveIKCmd::~CurveIKCmd()
 {
 }
 
+
+
+static MVector getPosition(MFnNurbsCurve & curve, double uVal)
+{
+	//MPoint minPos = MPoint(0, 0, 0);
+	//MPoint maxPos = MPoint(10, 10, 10);
+	//return (minPos + uVal * (maxPos - minPos));
+
+	MPoint p;
+	curve.getPointAtParam(uVal, p);
+	return p;
+}
+
+
+
+
+
 MStatus CurveIKCmd::doIt(const MArgList& args)
 {
 	MStatus stat;
 
 	//test
 
-	/*
+	MSelectionList curveList;
 	for (int i = 0; i < args.length(); i++)
 	{
+		//if (MString("-name") == args.asString(i, &stat)
+		//	&& MS::kSuccess == stat)
+		//{
+		//	
+		//	if (MS::kSuccess == stat)
+		//	{
+		//		curveList.add(args.asString(++i, &stat));
+		//	}
+		//}
+
+		/*
 		if (MString("-step") == args.asString(i, &stat)
 			&& MS::kSuccess == stat)
 		{
@@ -78,26 +108,20 @@ MStatus CurveIKCmd::doIt(const MArgList& args)
 			{
 			}
 		}
-
+		*/
 	}
-	*/
 
-	compute();
+	// 1.select curve
+	MSelectionList list;
+	stat = MGlobal::getActiveSelectionList(list);
+	if (MS::kSuccess != stat) {
+		return(stat);
+	}
+	MDagPath path;
+	list.getDagPath(0, path);
+	MFnNurbsCurve nurbCurve(path);
 
-	//parse grammar
-	return MStatus::kSuccess;
-}
-
-
-static MVector getPosition(double uVal)
-{
-	MPoint minPos = MPoint(0, 0, 0);
-	MPoint maxPos = MPoint(10, 10, 10);
-	return (minPos + uVal * (maxPos - minPos));
-}
-
-MStatus CurveIKCmd::compute()
-{
+	//compute();
 	MItDag it(MItDag::kDepthFirst, MFn::kIkHandle);
 
 	MFnIkHandle fnHandle(it.currentItem());
@@ -134,7 +158,7 @@ MStatus CurveIKCmd::compute()
 	MPoint startJointPos = MFnIkJoint(jointsDagPaths.front()).getTranslation(MSpace::kWorld);
 
 	MVector startToEndEff = m_localJointsPos.back() - m_localJointsPos.front();
-	double curveLength = (getPosition(1.0) - getPosition(0.0)).length();
+	double curveLength = (getPosition(nurbCurve, 1.0) - getPosition(nurbCurve, 0.0)).length();
 	double chainLength = startToEndEff.length(); // in local space.
 	double stretchFactor = curveLength / chainLength;
 
@@ -149,12 +173,12 @@ MStatus CurveIKCmd::compute()
 		double dist = stretchFactor * (curJointPosL - jointPosL).length();
 		uVal = uVal + dist / curveLength;
 
-		MVector curCurveJointPos = getPosition(uVal);
+		MVector curCurveJointPos = getPosition(nurbCurve, uVal);
 		curJoint.setTranslation(curCurveJointPos, MSpace::kWorld);
 		jointPosL = curJointPosL;
 	}
-	MVector effectorCurvePos = getPosition(1.0);
-	MVector curCurveJointPos = getPosition(uVal);
+	MVector effectorCurvePos = getPosition(nurbCurve, 1.0);
+	MVector curCurveJointPos = getPosition(nurbCurve, uVal);
 	MVector effectorVec = (effectorCurvePos - curCurveJointPos).normal();
 	double endJointAngle[3];
 	MVector effectorVecXY = MVector(effectorVec(0), effectorVec(1), 0.0);
@@ -166,4 +190,10 @@ MStatus CurveIKCmd::compute()
 	endJointAngle[0] = 0.0;
 	MFnIkJoint curJoint(jointsDagPaths.back()); curJoint.setRotation(endJointAngle, curJoint.rotationOrder());
 	return MS::kSuccess;
+
+
 }
+
+
+
+

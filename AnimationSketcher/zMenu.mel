@@ -83,6 +83,23 @@ global proc OnSelectLOAListItem()
 
 
 
+// deform to LOA
+
+global proc DeformToLOA()
+{
+	select -r `textScrollList -q -selectItem list_loa`;
+
+	CurveIKCmd;
+}
+
+
+
+
+
+//-----------------------------
+
+
+
 global proc ApplyAnimation()
 {
 	string $character = `textField -query -text tf_3dc`;
@@ -113,8 +130,6 @@ global proc ApplyAnimationCpp()
     string $character = `textField -query -text tf_3dc`;
 	string $curveName = `textField -query -text tf_trajectory`;
     string $rootJointName = `textField -query -text tf_rootJoint`;
-
-
 
     string $childrenJoints[] = `listRelatives -ad $rootJointName`;
     string $leafJointName = $childrenJoints[0];
@@ -181,6 +196,8 @@ global proc AnimationSketcherMainMenu()
 	button -l "Add LOA" -command "AddSelectedLOA" btn_add_loa;
 	button -l "Remove LOA" -command "RemoveSelectedLOA" btn_remove_loa;
 	button -l "Clean" -command "CleanLOAList" btn_clean_loa;
+
+	button -l "Deform LOA" -command "DeformToLOA" btn_deform_loa;
 
 	setParent ..;
 	setParent ..;
