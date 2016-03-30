@@ -58,19 +58,19 @@ MStatus CurveIKCmd::doIt(const MArgList& args)
 	MStatus stat;
 
 	//test
-
+	MString skeletonName;
 	MSelectionList curveList;
 	for (int i = 0; i < args.length(); i++)
 	{
-		//if (MString("-name") == args.asString(i, &stat)
-		//	&& MS::kSuccess == stat)
-		//{
-		//	
-		//	if (MS::kSuccess == stat)
-		//	{
-		//		curveList.add(args.asString(++i, &stat));
-		//	}
-		//}
+		if (MString("-name") == args.asString(i, &stat)
+			&& MS::kSuccess == stat)
+		{
+			skeletonName = args.asString(++i, &stat);
+			if (MS::kSuccess == stat)
+			{
+				//curveList.add(args.asString(++i, &stat));
+			}
+		}
 
 		/*
 		if (MString("-step") == args.asString(i, &stat)
@@ -112,21 +112,36 @@ MStatus CurveIKCmd::doIt(const MArgList& args)
 	}
 
 	// 1.select curve
-	MSelectionList list;
-	stat = MGlobal::getActiveSelectionList(list);
+	MSelectionList curve_list;
+	stat = MGlobal::getActiveSelectionList(curve_list);
 	if (MS::kSuccess != stat) {
 		return(stat);
 	}
 	MDagPath path;
-	list.getDagPath(0, path);
+	curve_list.getDagPath(0, path);
 	MFnNurbsCurve nurbCurve(path);
 
-	//compute();
+
+
+	// 2. select joint and create handle
+	//MGlobal::selectByName(skeletonName);
+	//MSelectionList list;
+	//stat = MGlobal::getActiveSelectionList(list);
+	//if (MS::kSuccess != stat) {
+	//	return(stat);
+	//}
+	//list.getDagPath(0, path);
+	//MFn
+
+	//MFnIkHandle fnHandle(it.currentItem());
+
 	MItDag it(MItDag::kDepthFirst, MFn::kIkHandle);
 
 	MFnIkHandle fnHandle(it.currentItem());
 
 	std::vector<MPoint> m_localJointsPos;
+
+
 
 	// End-Effector
 	MDagPath endEffectorPath;
@@ -135,7 +150,8 @@ MStatus CurveIKCmd::doIt(const MArgList& args)
 	MPoint effectorPos = fnEffector.rotatePivot(MSpace::kWorld);
 
 	unsigned int numJoints = endEffectorPath.length();
-	std::vector<MDagPath> jointsDagPaths; jointsDagPaths.reserve(numJoints);
+	std::vector<MDagPath> jointsDagPaths; 
+	jointsDagPaths.reserve(numJoints);
 	while (endEffectorPath.length() > 1)
 	{
 		endEffectorPath.pop();
