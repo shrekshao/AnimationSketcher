@@ -154,7 +154,6 @@ global proc ApplyMotionPathNode()
 {
     string $character = `textField -query -text tf_3dc`;
 	string $curveName = `textField -query -text tf_trajectory`;
-    string $rootJointName = `textField -query -text tf_rootJoint`;
     
     // Create an anim curve to define how the motion progresses along
     // the path. Here we assume the animation is 114 frames long and
@@ -164,7 +163,8 @@ global proc ApplyMotionPathNode()
     setKeyframe -t 114 -v 1 $ac;
 
     // Create a motionPathNode and connect the path and anim curve.
-    string $mp = `createNode motionPathNode`;
+    //string $mp = `createNode motionPathNode`;
+	string $mp = `createNode motionPath`;
     setAttr ($mp+".fractionMode") true;
     connectAttr ($ac+".output") ($mp+".uValue");
     connectAttr ($curveName+".worldSpace[0]") ($mp+".geometryPath");
@@ -176,6 +176,35 @@ global proc ApplyMotionPathNode()
     // 1) Turn on the "follow" attribute to enable rotation.
     setAttr ($mp+".follow") 1;
 }
+
+global proc InsertKeyFrame()
+{
+	//TODO
+	/*
+	if( `getAttr -k "joint1.rz"`||`getAttr -channelBox "joint1.rz"` )setKeyframe "joint1.rz";
+	// Result: 1 // 
+	setAttr "joint1.rotateZ" 45;
+	if( `getAttr -k "joint1.rz"`||`getAttr -channelBox "joint1.rz"` )setKeyframe "joint1.rz";
+	// Result: 1 // 
+	currentTime 113 ;
+	currentTime 1 ;
+	currentTime 1 ;
+	setAttr "joint1.rotateZ" 0;
+	if( `getAttr -k "joint1.rz"`||`getAttr -channelBox "joint1.rz"` )setKeyframe "joint1.rz";
+	// Result: 1 // 
+	currentTime 114 ;
+	setAttr "joint1.rotateZ" 0;
+	if( `getAttr -k "joint1.rz"`||`getAttr -channelBox "joint1.rz"` )setKeyframe "joint1.rz";
+	// Result: 1 // 
+	currentTime 1 ;
+	*/
+}
+
+
+
+
+
+
 
 global proc AnimationSketcherMainMenu()
 {

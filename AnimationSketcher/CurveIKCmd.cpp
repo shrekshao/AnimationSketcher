@@ -73,11 +73,20 @@ MStatus CurveIKCmd::doIt(const MArgList& args)
 		{
 			rootName = args.asString(++i, &stat);
 		}
-
-		if (MString("-end") == args.asString(i, &stat)
+		else if (MString("-end") == args.asString(i, &stat)
 			&& MS::kSuccess == stat)
 		{
 			endEffectorName = args.asString(++i, &stat);
+		}
+		else if (MString("-curve") == args.asString(i, &stat)
+			&& MS::kSuccess == stat)
+		{
+			//endEffectorName = args.asString(++i, &stat);
+		}
+		else if (MString("-ratio") == args.asString(i, &stat)
+			&& MS::kSuccess == stat)
+		{
+			//endEffectorName = args.asString(++i, &stat);
 		}
 
 		/*
