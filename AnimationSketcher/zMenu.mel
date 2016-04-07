@@ -234,27 +234,50 @@ global proc ApplyAnimation()
 
 	// trajectory flow path
 	string $ikhandle = ApplyAnimation_FlowMotionPath();
-
-	// ik control, weight
-
-	//setAttr ($ikhandle + ".ikFkManipulation", 1);
-	//setAttr ($ikhandle + ".ikBlend", 0);
-
-	//currentTime 45 ;
-	//setKeyframe { "ikHandle1.ikb" };
+	setAttr ($ikhandle + ".ikFkManipulation", 1);
 
 
 	// iterate list
 	string $loa_array[] = `textScrollList -q -allItems list_loa`;
 	string $trajectory = `textField -query -text tf_trajectory`;
+	float $spans = `getAttr ($trajectory + ".spans")`;
 
+	//TODO: get blend key times from menu
+	int $blend_frames = 10;
+	int $total_frames = 120;
 
 	for ($loa in $loa_array)
 	{
 		string $intersect_node = GetIntersectNode($trajectory, $loa);
 		float $u[] = `getAttr ($intersect_node + ".p1")`;
 
-		print $u;
+		float $p = $u[0] / $spans;		// 0 - 1
+
+		//print $u;
+
+		int $center_frame = $p * $total_frames;
+		int $blend_in_frame = $center_frame - $blend_frames;
+		if($blend_in_frame <= 0) 
+		{
+			$blend_in_frame = 1;
+		}
+		int $blend_out_frame = $center_frame + $blend_frames;
+
+		//insert key frames
+		currentTime $blend_in_frame ;
+		setAttr ($ikhandle + ".ikBlend", 1);
+		setKeyframe { ($ikhandle + ".ikb") };
+		
+		currentTime $center_frame ;
+		setAttr ($ikhandle + ".ikBlend", 0);
+		setKeyframe { ($ikhandle + ".ikb") };
+
+		currentTime $blend_out_frame ;
+		setAttr ($ikhandle + ".ikBlend", 1);
+		setKeyframe { ($ikhandle + ".ikb") };
+
+		// fk deform to loa
+		currentTime $center_frame;
 	}
 	
 
