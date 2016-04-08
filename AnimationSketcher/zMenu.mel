@@ -91,18 +91,25 @@ global proc OnSelectLOAListItem()
 
 
 
-// deform to LOA
+// deform to currently selected LOA
+
+global proc DeformToLOA_Pure()
+{
+	string $root = `textField -query -text tf_rootJoint`;
+	string $end = `textField -query -text tf_endJoint`;
+
+	string $childrenJoints[] = `listRelatives -ad $root`;
+	string $end = $childrenJoints[0];
+
+	CurveIKCmd -root $root -end $end;
+}
 
 global proc DeformToLOA()
 {
 	select -r `textScrollList -q -selectItem list_loa`;
 
-	string $root = `textField -query -text tf_rootJoint`;
-	string $end = `textField -query -text tf_endJoint`;
-
-	CurveIKCmd -root $root -end $end;
+	DeformToLOA_Pure();
 }
-
 
 
 
@@ -179,35 +186,6 @@ global proc ApplyMotionPathNode()
     setAttr ($mp+".follow") 1;
 }
 
-global proc InsertKeyFrame()
-{
-	//TODO
-	/*
-	if( `getAttr -k "joint1.rz"`||`getAttr -channelBox "joint1.rz"` )setKeyframe "joint1.rz";
-	// Result: 1 // 
-	setAttr "joint1.rotateZ" 45;
-	if( `getAttr -k "joint1.rz"`||`getAttr -channelBox "joint1.rz"` )setKeyframe "joint1.rz";
-	// Result: 1 // 
-	currentTime 113 ;
-	currentTime 1 ;
-	currentTime 1 ;
-	setAttr "joint1.rotateZ" 0;
-	if( `getAttr -k "joint1.rz"`||`getAttr -channelBox "joint1.rz"` )setKeyframe "joint1.rz";
-	// Result: 1 // 
-	currentTime 114 ;
-	setAttr "joint1.rotateZ" 0;
-	if( `getAttr -k "joint1.rz"`||`getAttr -channelBox "joint1.rz"` )setKeyframe "joint1.rz";
-	// Result: 1 // 
-	currentTime 1 ;
-
-
-
-
-	setAttr "ikHandle1.ikFkManipulation" 1;
-	setAttr "ikHandle1.ikBlend" 0;
-	*/
-}
-
 
 /*
 // return intersecting point
@@ -236,15 +214,18 @@ global proc ApplyAnimation()
 	string $ikhandle = ApplyAnimation_FlowMotionPath();
 	setAttr ($ikhandle + ".ikFkManipulation", 1);
 
-
 	// iterate list
 	string $loa_array[] = `textScrollList -q -allItems list_loa`;
 	string $trajectory = `textField -query -text tf_trajectory`;
 	float $spans = `getAttr ($trajectory + ".spans")`;
 
+	//get all joints
+	string $rootJointName = `textField -query -text tf_rootJoint`;
+	string $childrenJoints[] = `listRelatives -ad $rootJointName`;
+
 	//TODO: get blend key times from menu
-	int $blend_frames = 10;
-	int $total_frames = 120;
+	int $blend_frames = `floatSliderGrp -q -v sld_blend`;
+	int $total_frames = `floatSliderGrp -q -v sld_total`;
 
 	for ($loa in $loa_array)
 	{
@@ -267,6 +248,15 @@ global proc ApplyAnimation()
 		currentTime $blend_in_frame ;
 		setAttr ($ikhandle + ".ikBlend", 1);
 		setKeyframe { ($ikhandle + ".ikb") };
+
+		for($j in $childrenJoints)
+		{
+			//setKeyframe ($j + ".rx");
+			//setKeyframe ($j + ".ry");
+			//setKeyframe ($j + ".rz");
+			setKeyframe {($j)};
+		}
+
 		
 		currentTime $center_frame ;
 		setAttr ($ikhandle + ".ikBlend", 0);
@@ -276,8 +266,29 @@ global proc ApplyAnimation()
 		setAttr ($ikhandle + ".ikBlend", 1);
 		setKeyframe { ($ikhandle + ".ikb") };
 
+		for($j in $childrenJoints)
+		{
+			//setKeyframe ($j + ".rx");
+			//setKeyframe ($j + ".ry");
+			//setKeyframe ($j + ".rz");
+			setKeyframe {($j)};
+		}
+
 		// fk deform to loa
 		currentTime $center_frame;
+		select -r $loa;
+		DeformToLOA_Pure();
+
+		// set keyframe for each joints
+		for($j in $childrenJoints)
+		{
+			//setKeyframe ($j + ".rx");
+			//setKeyframe ($j + ".ry");
+			//setKeyframe ($j + ".rz");
+			setKeyframe {($j)};
+		}
+		
+
 	}
 	
 
@@ -343,9 +354,13 @@ global proc AnimationSketcherMainMenu()
 
 	setParent ..;
 
+	rowLayout;
+	floatSliderGrp -label "loa blend frame" -field true -value 10 -min 1 -max 10 -fieldMinValue 1 -fieldMaxValue 100 sld_blend;
+	setParent ..;
 
-
-
+	rowLayout;
+	floatSliderGrp -label "total animation frames" -field true -value 120 -min 1 -max 120 -fieldMinValue 1 -fieldMaxValue 500 sld_total;
+	setParent ..;
 
 
 	//----- LOA menu list
