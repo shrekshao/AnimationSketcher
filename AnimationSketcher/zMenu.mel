@@ -198,6 +198,32 @@ global proc LOAIntersect(string $trajectory, string $loa)
 }
 */
 
+
+global proc limitJointRotation(string $joints[])
+{
+	for ($j in $joints)
+	{
+		joint -e -lsx true -lx -1 1 -lsz true -lz -1 1 ($j);
+
+		setKeyframe ($j);
+	}
+}
+
+
+global proc unlimitJointRotation(string $joints[])
+{
+	for ($j in $joints)
+	{
+		joint -e -lx -360 360 -lz -360 360 ($j);
+
+		setKeyframe ($j);
+	}
+}
+
+
+
+
+
 // Final version of apply animation
 // 1. create motion path follow
 // 2. for loa : loa list
@@ -209,6 +235,16 @@ global proc LOAIntersect(string $trajectory, string $loa)
 
 global proc ApplyAnimation()
 {
+	//get all joints
+	string $rootJointName = `textField -query -text tf_rootJoint`;
+	string $childrenJoints[] = `listRelatives -ad $rootJointName`;
+	
+	print $childrenJoints[0];
+	//print $childrenJoints[size($childrenJoints)-1];
+	
+	$childrenJoints[size($childrenJoints)] = $rootJointName;		//add root to the list
+
+	//limitJointRotation($childrenJoints);
 
 	// trajectory flow path
 	string $ikhandle = ApplyAnimation_FlowMotionPath();
@@ -219,11 +255,9 @@ global proc ApplyAnimation()
 	string $trajectory = `textField -query -text tf_trajectory`;
 	float $spans = `getAttr ($trajectory + ".spans")`;
 
-	//get all joints
-	string $rootJointName = `textField -query -text tf_rootJoint`;
-	string $childrenJoints[] = `listRelatives -ad $rootJointName`;
-	$childrenJoints[size($childrenJoints)] = $rootJointName;
+	
 
+	
 	
 	//TODO: set total_frames
 	int $blend_frames = `floatSliderGrp -q -v sld_blend`;
@@ -232,6 +266,8 @@ global proc ApplyAnimation()
 
 
 	//int $center_frame_array[];
+
+	
 
 
 	for ($loa in $loa_array)
@@ -257,7 +293,7 @@ global proc ApplyAnimation()
 		setAttr ($ikhandle + ".ikBlend", 1);
 		setKeyframe { ($ikhandle + ".ikb") };
 
-		
+		unlimitJointRotation($childrenJoints);
 		
 
 		for($j in $childrenJoints)
@@ -283,7 +319,7 @@ global proc ApplyAnimation()
 		setAttr ($ikhandle + ".ikBlend", 1);
 		setKeyframe { ($ikhandle + ".ikb") };
 
-		
+		unlimitJointRotation($childrenJoints);
 
 		for($j in $childrenJoints)
 		{
@@ -303,11 +339,14 @@ global proc ApplyAnimation()
 		currentTime ($blend_in_frame + 1) ;
 		setAttr ($ikhandle + ".ikBlend", 0);
 		setKeyframe { ($ikhandle + ".ikb") };
+
+		limitJointRotation($childrenJoints);
 		
 		currentTime ($blend_out_frame - 1) ;
 		setAttr ($ikhandle + ".ikBlend", 0);
 		setKeyframe { ($ikhandle + ".ikb") };
 		
+		limitJointRotation($childrenJoints);
 		
 
 		// fk deform to loa
@@ -322,6 +361,10 @@ global proc ApplyAnimation()
 			//setKeyframe ($j + ".rx");
 			//setKeyframe ($j + ".ry");
 			//setKeyframe ($j + ".rz");
+
+			//setKeyframe ($j + ".tx");
+			//setKeyframe ($j + ".tz");
+
 			setKeyframe {($j)};
 		}
 	}
