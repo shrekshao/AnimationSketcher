@@ -222,10 +222,17 @@ global proc ApplyAnimation()
 	//get all joints
 	string $rootJointName = `textField -query -text tf_rootJoint`;
 	string $childrenJoints[] = `listRelatives -ad $rootJointName`;
+	$childrenJoints[size($childrenJoints)] = $rootJointName;
 
-	//TODO: get blend key times from menu
+	
+	//TODO: set total_frames
 	int $blend_frames = `floatSliderGrp -q -v sld_blend`;
 	int $total_frames = `floatSliderGrp -q -v sld_total`;
+
+
+
+	//int $center_frame_array[];
+
 
 	for ($loa in $loa_array)
 	{
@@ -237,6 +244,7 @@ global proc ApplyAnimation()
 		//print $u;
 
 		int $center_frame = $p * $total_frames;
+		//$center_frame_array[size($center_frame_array)] = $center_frame;
 		int $blend_in_frame = $center_frame - $blend_frames;
 		if($blend_in_frame <= 0) 
 		{
@@ -244,16 +252,23 @@ global proc ApplyAnimation()
 		}
 		int $blend_out_frame = $center_frame + $blend_frames;
 
-		//insert key frames
+		//insert key frames for joints transform
 		currentTime $blend_in_frame ;
 		setAttr ($ikhandle + ".ikBlend", 1);
 		setKeyframe { ($ikhandle + ".ikb") };
+
+		
+		
 
 		for($j in $childrenJoints)
 		{
 			//setKeyframe ($j + ".rx");
 			//setKeyframe ($j + ".ry");
 			//setKeyframe ($j + ".rz");
+
+			//setKeyframe ($j + ".tx");
+			//setKeyframe ($j + ".tz");
+
 			setKeyframe {($j)};
 		}
 
@@ -262,19 +277,41 @@ global proc ApplyAnimation()
 		setAttr ($ikhandle + ".ikBlend", 0);
 		setKeyframe { ($ikhandle + ".ikb") };
 
+
+
 		currentTime $blend_out_frame ;
 		setAttr ($ikhandle + ".ikBlend", 1);
 		setKeyframe { ($ikhandle + ".ikb") };
+
+		
 
 		for($j in $childrenJoints)
 		{
 			//setKeyframe ($j + ".rx");
 			//setKeyframe ($j + ".ry");
 			//setKeyframe ($j + ".rz");
+
+			//setKeyframe ($j + ".tx");
+			//setKeyframe ($j + ".tz");
+
 			setKeyframe {($j)};
 		}
 
+
+		//insert key frames for ikhandle weights
+
+		currentTime ($blend_in_frame + 1) ;
+		setAttr ($ikhandle + ".ikBlend", 0);
+		setKeyframe { ($ikhandle + ".ikb") };
+		
+		currentTime ($blend_out_frame - 1) ;
+		setAttr ($ikhandle + ".ikBlend", 0);
+		setKeyframe { ($ikhandle + ".ikb") };
+		
+		
+
 		// fk deform to loa
+
 		currentTime $center_frame;
 		select -r $loa;
 		DeformToLOA_Pure();
@@ -287,9 +324,38 @@ global proc ApplyAnimation()
 			//setKeyframe ($j + ".rz");
 			setKeyframe {($j)};
 		}
-		
-
 	}
+
+
+
+
+	/*
+
+	// fk deform to loa
+	int $i = 0;
+
+	for ($loa in $loa_array)
+	{
+		currentTime $center_frame_array[$i];
+		select -r $loa;
+		DeformToLOA_Pure();
+
+		// set keyframe for each joints
+		for($j in $childrenJoints)
+		{
+			//setKeyframe ($j + ".rx");
+			//setKeyframe ($j + ".ry");
+			//setKeyframe ($j + ".rz");
+			setKeyframe {($j)};
+		}
+
+		$i = $i + 1;
+	}
+
+	*/
+
+
+
 	
 
 }
