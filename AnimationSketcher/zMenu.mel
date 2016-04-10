@@ -198,7 +198,7 @@ global proc LOAIntersect(string $trajectory, string $loa)
 }
 */
 
-
+/*
 global proc limitJointRotation(string $joints[])
 {
 	for ($j in $joints)
@@ -219,7 +219,7 @@ global proc unlimitJointRotation(string $joints[])
 		setKeyframe ($j);
 	}
 }
-
+*/
 
 
 
@@ -293,7 +293,7 @@ global proc ApplyAnimation()
 		setAttr ($ikhandle + ".ikBlend", 1);
 		setKeyframe { ($ikhandle + ".ikb") };
 
-		unlimitJointRotation($childrenJoints);
+		//unlimitJointRotation($childrenJoints);
 		
 
 		for($j in $childrenJoints)
@@ -319,7 +319,7 @@ global proc ApplyAnimation()
 		setAttr ($ikhandle + ".ikBlend", 1);
 		setKeyframe { ($ikhandle + ".ikb") };
 
-		unlimitJointRotation($childrenJoints);
+		//unlimitJointRotation($childrenJoints);
 
 		for($j in $childrenJoints)
 		{
@@ -340,13 +340,13 @@ global proc ApplyAnimation()
 		setAttr ($ikhandle + ".ikBlend", 0);
 		setKeyframe { ($ikhandle + ".ikb") };
 
-		limitJointRotation($childrenJoints);
+		//limitJointRotation($childrenJoints);
 		
 		currentTime ($blend_out_frame - 1) ;
 		setAttr ($ikhandle + ".ikBlend", 0);
 		setKeyframe { ($ikhandle + ".ikb") };
 		
-		limitJointRotation($childrenJoints);
+		//limitJointRotation($childrenJoints);
 		
 
 		// fk deform to loa
