@@ -198,7 +198,7 @@ global proc LOAIntersect(string $trajectory, string $loa)
 }
 */
 
-
+/*
 global proc limitJointRotation(string $joints[])
 {
 	for ($j in $joints)
@@ -219,7 +219,7 @@ global proc unlimitJointRotation(string $joints[])
 		setKeyframe ($j);
 	}
 }
-
+*/
 
 
 
@@ -267,9 +267,15 @@ global proc ApplyAnimation()
 
 	//int $center_frame_array[];
 
-	
+	//hack for rotation
+	float $in_rx[];
+	float $in_ry[];
+	float $in_rz[];
+	float $out_rx[];
+	float $out_ry[];
+	float $out_rz[];
 
-
+	int $idx = 0;
 	for ($loa in $loa_array)
 	{
 		string $intersect_node = GetIntersectNode($trajectory, $loa);
@@ -292,10 +298,9 @@ global proc ApplyAnimation()
 		currentTime $blend_in_frame ;
 		setAttr ($ikhandle + ".ikBlend", 1);
 		setKeyframe { ($ikhandle + ".ikb") };
-
-		unlimitJointRotation($childrenJoints);
 		
 
+		$idx = 0;
 		for($j in $childrenJoints)
 		{
 			//setKeyframe ($j + ".rx");
@@ -306,6 +311,12 @@ global proc ApplyAnimation()
 			//setKeyframe ($j + ".tz");
 
 			setKeyframe {($j)};
+
+			$in_rx[$idx] = getAttr ($j + ".rx");
+			$in_ry[$idx] = getAttr ($j + ".ry");
+			$in_rz[$idx] = getAttr ($j + ".rz");
+
+			$idx = $idx + 1;
 		}
 
 		
@@ -319,8 +330,9 @@ global proc ApplyAnimation()
 		setAttr ($ikhandle + ".ikBlend", 1);
 		setKeyframe { ($ikhandle + ".ikb") };
 
-		unlimitJointRotation($childrenJoints);
+		//unlimitJointRotation($childrenJoints);
 
+		$idx = 0;
 		for($j in $childrenJoints)
 		{
 			//setKeyframe ($j + ".rx");
@@ -331,7 +343,14 @@ global proc ApplyAnimation()
 			//setKeyframe ($j + ".tz");
 
 			setKeyframe {($j)};
+
+			$out_rx[$idx] = getAttr ($j + ".rx");
+			$out_ry[$idx] = getAttr ($j + ".ry");
+			$out_rz[$idx] = getAttr ($j + ".rz");
+
+			$idx = $idx + 1;
 		}
+
 
 
 		//insert key frames for ikhandle weights
@@ -339,63 +358,70 @@ global proc ApplyAnimation()
 		currentTime ($blend_in_frame + 1) ;
 		setAttr ($ikhandle + ".ikBlend", 0);
 		setKeyframe { ($ikhandle + ".ikb") };
-
-		limitJointRotation($childrenJoints);
 		
 		currentTime ($blend_out_frame - 1) ;
 		setAttr ($ikhandle + ".ikBlend", 0);
 		setKeyframe { ($ikhandle + ".ikb") };
 		
-		limitJointRotation($childrenJoints);
-		
 
 		// fk deform to loa
 
 		currentTime $center_frame;
-		select -r $loa;
-		DeformToLOA_Pure();
-
 		// set keyframe for each joints
+		$idx = 0;
 		for($j in $childrenJoints)
 		{
-			//setKeyframe ($j + ".rx");
-			//setKeyframe ($j + ".ry");
-			//setKeyframe ($j + ".rz");
+			
 
 			//setKeyframe ($j + ".tx");
 			//setKeyframe ($j + ".tz");
 
-			setKeyframe {($j)};
+
+			setAttr ($j + ".rx", $in_rx[$idx]);
+			setAttr ($j + ".ry", $in_ry[$idx]);
+			setAttr ($j + ".rz", $in_rz[$idx]);
+
+			setKeyframe ($j + ".rx");
+			setKeyframe ($j + ".ry");
+			setKeyframe ($j + ".rz");
+			//setKeyframe {($j)};
+
+			$idx = $idx + 1;
 		}
-	}
-
-
-
-
-	/*
-
-	// fk deform to loa
-	int $i = 0;
-
-	for ($loa in $loa_array)
-	{
-		currentTime $center_frame_array[$i];
 		select -r $loa;
 		DeformToLOA_Pure();
-
-		// set keyframe for each joints
 		for($j in $childrenJoints)
 		{
-			//setKeyframe ($j + ".rx");
-			//setKeyframe ($j + ".ry");
-			//setKeyframe ($j + ".rz");
-			setKeyframe {($j)};
+			setKeyframe ($j);
 		}
 
-		$i = $i + 1;
+		currentTime ($center_frame + 1);
+		
+		$idx = 0;
+		for($j in $childrenJoints)
+		{
+
+			setAttr ($j + ".rx", $out_rx[$idx]);
+			setAttr ($j + ".ry", $out_ry[$idx]);
+			setAttr ($j + ".rz", $out_rz[$idx]);
+
+			setKeyframe ($j + ".rx");
+			setKeyframe ($j + ".ry");
+			setKeyframe ($j + ".rz");
+			//setKeyframe {($j)};
+
+			$idx = $idx + 1;
+		}
+		select -r $loa;
+		DeformToLOA_Pure();
+		for($j in $childrenJoints)
+		{
+			setKeyframe ($j);
+		}
+		
 	}
 
-	*/
+
 
 
 
