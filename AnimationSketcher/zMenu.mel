@@ -138,9 +138,12 @@ global proc string ApplyAnimation_FlowMotionPath()
 
     //pathAnimation -startTimeU `playbackOptions -query -minTime` -endTimeU `playbackOptions -query -maxTime` -c $curveName $character;
     select -r $ikSplineName $curveName;
-    pathAnimation -fractionMode true -follow true -followAxis z -upAxis y -worldUpType "vector" -worldUpVector 0 1 0 -inverseUp false -inverseFront false -bank false -startTimeU `playbackOptions -query -minTime` -endTimeU  `playbackOptions -query -maxTime`;
+    
+	//pathAnimation -fractionMode true -follow true -followAxis z -upAxis y -worldUpType "vector" -worldUpVector 0 1 0 -inverseUp false -inverseFront false -bank false -startTimeU `playbackOptions -query -minTime` -endTimeU  `playbackOptions -query -maxTime`;
+	pathAnimation -fractionMode true -follow true -followAxis x -upAxis y -worldUpType "vector" -worldUpVector 0 1 0 -inverseUp false -inverseFront false -bank false -startTimeU `playbackOptions -query -minTime` -endTimeU  `playbackOptions -query -maxTime`;
 
-    flow -divisions 2 2 30 -objectCentered 1 -localCompute 0 -localDivisions 2 2 2 $ikSplineName;
+    //flow -divisions 2 2 30 -objectCentered 1 -localCompute 0 -localDivisions 2 2 2 $ikSplineName;
+	flow -divisions 30 2 2 -objectCentered 1 -localCompute 0 -localDivisions 2 2 2 $ikSplineName;
 
 	return $ikHandleName;
 }
