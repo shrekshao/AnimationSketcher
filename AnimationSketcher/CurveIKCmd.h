@@ -18,7 +18,7 @@ public:
 
 	MStatus compute();
 
-
+	static bool builtLocalSkeleton;
 	void GUI();
 };
 
