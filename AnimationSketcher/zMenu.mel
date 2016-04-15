@@ -242,10 +242,21 @@ global proc ApplyAnimation()
 	string $rootJointName = `textField -query -text tf_rootJoint`;
 	string $childrenJoints[] = `listRelatives -ad $rootJointName`;
 	
-	print $childrenJoints[0];
+	$childrenJoints[size($childrenJoints)] = $rootJointName;		//add root to the list
+
+	/*
+	for($j in $childrenJoints)
+	{
+		setAttr ($j+".jointOrientX", 0);
+		setAttr ($j+".jointOrientY", 0);
+		setAttr ($j+".jointOrientZ", 0);
+	}
+	*/
+
+	//print $childrenJoints[0];
 	//print $childrenJoints[size($childrenJoints)-1];
 	
-	$childrenJoints[size($childrenJoints)] = $rootJointName;		//add root to the list
+	
 
 	//limitJointRotation($childrenJoints);
 
