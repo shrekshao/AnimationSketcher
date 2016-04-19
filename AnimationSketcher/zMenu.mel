@@ -148,6 +148,32 @@ global proc string ApplyAnimation_FlowMotionPath()
 	return $ikHandleName;
 }
 
+// return ik handle name
+global proc string ApplyAnimation_TranslateOnly()
+{
+	string $character = `textField -query -text tf_3dc`;
+	string $curveName = `textField -query -text tf_trajectory`;
+    string $rootJointName = `textField -query -text tf_rootJoint`;
+    
+    string $childrenJoints[] = `listRelatives -ad $rootJointName`;
+    string $leafJointName = $childrenJoints[0];
+    select -r $rootJointName $leafJointName;
+    string $ikHandlesNames[] = `ikHandle -sol ikSplineSolver -ns 30`;
+    string $ikHandleName = $ikHandlesNames[0];
+    string $ikSplineName = $ikHandlesNames[2];
+
+    xform -cp $ikSplineName; //Center spline curve pivot
+
+    select -r $ikHandleName;
+    setAttr ($ikHandleName+".dTwistControlEnable") 1;
+
+    select -r $ikSplineName $curveName;
+    
+	pathAnimation -follow true -fractionMode true -upAxis x -worldUpType "vector" -worldUpVector 0 1 0 -inverseUp false -inverseFront false -bank true -startTimeU `playbackOptions -query -minTime` -endTimeU  `playbackOptions -query -maxTime`;
+
+	return $ikHandleName;
+}
+
 global proc ApplyAnimationCpp()
 {
     string $character = `textField -query -text tf_3dc`;
@@ -514,7 +540,7 @@ global proc AnimationSketcherMainMenu()
 	button -l "Apply" -command "ApplyAnimation" btn_apply;
 	//button -l "Apply" -command "ApplyAnimation_FlowMotionPath" btn_apply;
 	
-	button -l "Apply2" -command "ApplyMotionPathNode" btn_apply2;
+	button -l "Apply_Bounce" -command "ApplyAnimation_TranslateOnly" btn_apply2;
 
 	button -l "IKNodeTest" -command "ApplyAnimationCpp" btn_ik_node_test;
 	
