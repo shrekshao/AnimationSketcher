@@ -213,7 +213,7 @@ global proc string ApplyAnimation_TranslateOnly()
     string $ikHandleName = $ikHandlesNames[0];
     string $ikSplineName = $ikHandlesNames[2];
 
-    xform -cp $ikSplineName; //Center spline curve pivot
+    //xform -cp $ikSplineName; //Center spline curve pivot
 
     select -r $ikHandleName;
     setAttr ($ikHandleName+".dTwistControlEnable") 1;
