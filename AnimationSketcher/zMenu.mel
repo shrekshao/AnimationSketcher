@@ -51,6 +51,57 @@ global proc string GetIntersectNode(string $c1, string $c2)
 }
 
 
+//---------------------------
+// Self collision detection
+//--------------------------
+
+global proc float[] GetSelfIntersection(string $c)
+{
+	int $spans = getAttr ($c+".spans");
+	int $i;
+
+	float $p[];		// self intersecting point
+
+	for($i=1; $i < $spans; ++$i)
+	{
+		string $dc[] = `detachCurve -ch 1 -cos on ($c + ".u[" + $i + "]")`;
+		string $dc2[] = `detachCurve -ch 1 -cos on -rpo 1 ($dc[0] + ".u[" + ($i-0.01) + "]")`;
+
+		// curveIntersect
+		string $tmp = `curveIntersect $dc2[1] $dc[1]`;
+		//print $dc2[0];
+		//print $dc[1];
+
+		if($tmp != "")
+		{
+			string $split_tmp[];
+			tokenize ($tmp," ",$split_tmp);
+			float $intersect_p = $split_tmp[0];
+			$p[size($p)] = $intersect_p;
+			//print $tmp;
+			//print $intersect_p;
+		}
+
+		
+		select -r $dc2[0];
+		doDelete;
+		select -r $dc2[1];
+		doDelete;
+		select -r $dc[1];
+		doDelete;
+		
+	}
+
+
+	return $p;
+
+}
+
+
+
+
+
+
 
 //use `pointOnCurve` to get position
 
