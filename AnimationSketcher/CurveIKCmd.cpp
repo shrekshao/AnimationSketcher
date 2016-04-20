@@ -53,8 +53,6 @@ static MVector getPosition(MFnNurbsCurve & curve, double uVal)
 	double u = curve.findParamFromLength(uVal * curve.length());
 	curve.getPointAtParam(u, p);
 
-
-
 	return p;
 }
 
@@ -139,6 +137,7 @@ MStatus CurveIKCmd::doIt(const MArgList& args)
 	unsigned int numJoints = endEffectorPath.length();
 	std::vector<MDagPath> jointsDagPaths;
 	jointsDagPaths.reserve(numJoints);
+	jointsDagPaths.push_back(endEffectorPath);
 	while (endEffectorPath.length() > 1)
 	{
 		endEffectorPath.pop();
@@ -148,6 +147,7 @@ MStatus CurveIKCmd::doIt(const MArgList& args)
 
 	if (builtLocalSkeleton == false)
 	{
+		m_localJointsPos.clear();
 		for (int jointIdx = 0; jointIdx < jointsDagPaths.size(); ++jointIdx)
 		{
 			//MFnIkJoint curJoint(jointsDagPaths[jointIdx]);
@@ -158,8 +158,19 @@ MStatus CurveIKCmd::doIt(const MArgList& args)
 		builtLocalSkeleton = true;
 	}
 
-	MPoint startJointPos = MFnTransform(jointsDagPaths.front()).getTranslation(MSpace::kWorld);
+	for (int jointIdx = 0; jointIdx < jointsDagPaths.size(); ++jointIdx)
+	{
+		double b[3];
+		MFnIkJoint ikJoint(jointsDagPaths[jointIdx]);
+		MFnTransform trnsfrmJoint(jointsDagPaths[jointIdx]);
+		MTransformationMatrix::RotationOrder rotOrder = ikJoint.rotationOrder();
+		ikJoint.getOrientation( b, rotOrder );
+		trnsfrmJoint.setRotation( b, rotOrder );
+		double zero[] = { 0, 0, 0 };
+		ikJoint.setOrientation(zero, rotOrder);
+	}
 
+	MPoint startJointPos = MFnTransform(jointsDagPaths.front()).getTranslation(MSpace::kWorld);
 	MVector startToEndEff = m_localJointsPos.back() - m_localJointsPos.front();
 	double curveLength = nurbCurve.length();
 	double chainLength = startToEndEff.length(); // in local space.
