@@ -69,6 +69,7 @@ global proc float[] GetSelfIntersection(string $c)
 
 		// curveIntersect
 		string $tmp = `curveIntersect $dc2[1] $dc[1]`;
+		
 		//print $dc2[0];
 		//print $dc[1];
 
@@ -76,8 +77,11 @@ global proc float[] GetSelfIntersection(string $c)
 		{
 			string $split_tmp[];
 			tokenize ($tmp," ",$split_tmp);
-			float $intersect_p = $split_tmp[0];
-			$p[size($p)] = $intersect_p;
+			float $intersect_p1 = $split_tmp[0];
+			float $intersect_p2 = $split_tmp[1];
+			$p[size($p)] = $intersect_p1;
+			$p[size($p)] = $intersect_p2;
+
 			//print $tmp;
 			//print $intersect_p;
 		}
@@ -267,39 +271,42 @@ global proc ApplyMotionPathNode()
 }
 
 
-/*
-// return intersecting point
-global proc LOAIntersect(string $trajectory, string $loa)
+
+global proc float[] GetRollingParam(string $curveName)
 {
-	string $intersect_node = GetIntersectNode(string $c1, string $c2);
 
-	//get param => get time
+	float $loop_p_all[] = GetSelfIntersection($curveName);
+	// (p1,p2) - one intersecting point
 
-}
-*/
+	float $loop_p[];
+	float $current_min1 = 0;
+	float $current_min2 = 0;
 
-/*
-global proc limitJointRotation(string $joints[])
-{
-	for ($j in $joints)
+	int $i;
+	int $len = size($loop_p_all);
+	for($i=0; $i<$len; $i+=2)
 	{
-		joint -e -lsx true -lx -1 1 -lsz true -lz -1 1 ($j);
+		float $p1 = $loop_p_all[$i];
+		float $p2 = $loop_p_all[($i+1)];
+		if($p1 > $current_min1)
+		{
+			$current_min1 = $p1 + 0.01;
+			$current_min2 = $p2 + 0.01;
 
-		setKeyframe ($j);
+			$loop_p[size($loop_p)] = $p1;
+			$loop_p[size($loop_p)] = $p2;
+
+			//$loop_p[size($loop_p)] = ($p1 + $p2) / 2;
+		}
 	}
+
+	//now loop self intersecting points are in $loop_p
+	return $loop_p;
 }
 
 
-global proc unlimitJointRotation(string $joints[])
-{
-	for ($j in $joints)
-	{
-		joint -e -lx -360 360 -lz -360 360 ($j);
 
-		setKeyframe ($j);
-	}
-}
-*/
+
 
 
 
@@ -318,6 +325,8 @@ global proc ApplyAnimation()
 	//get all joints
 	string $rootJointName = `textField -query -text tf_rootJoint`;
 	string $childrenJoints[] = `listRelatives -ad $rootJointName`;
+
+	string $curveName = `textField -query -text tf_trajectory`;
 	
 	$childrenJoints[size($childrenJoints)] = $rootJointName;		//add root to the list
 
@@ -462,36 +471,94 @@ global proc ApplyAnimation()
 
 
 
-
-	/*
-
-	// fk deform to loa
-	int $i = 0;
-
-	for ($loa in $loa_array)
+	
+	//Rolling generate
+	float $loop_p[] = GetRollingParam($curveName);
+	
+	int $i;
+	int $len = size($loop_p);
+	for($i=0; $i<$len; $i+=2)
 	{
-		currentTime $center_frame_array[$i];
-		select -r $loa;
-		DeformToLOA_Pure();
+		float $p_in = $loop_p[$i];
+		float $p_out = $loop_p[$i+1];
+		float $p = ($p_in + $p_out) / 2 + 0.5; 
 
-		// set keyframe for each joints
+
+		int $center_frame = $p / $spans * $total_frames;
+
+
+		//int $blend_in_frame = $center_frame - $blend_frames;
+		//int $blend_in_frame = $p_in / $spans * $total_frames;
+		int $blend_in_frame = ($p_in+0.5) / $spans * $total_frames;
+
+
+		if($blend_in_frame <= 0) 
+		{
+			$blend_in_frame = 1;
+		}
+		//int $blend_out_frame = $center_frame + $blend_frames;
+		//int $blend_out_frame = $p_out / $spans * $total_frames;
+		int $blend_out_frame = ($p_out+0.5) / $spans * $total_frames;
+
+
+		//insert key frames for joints transform
+		currentTime $blend_in_frame ;
+		setAttr ($ikhandle + ".ikBlend", 1);
+		setKeyframe { ($ikhandle + ".ikb") };
+
+		float $in_x = `getAttr ($rootJointName+".translateX")`;
+
 		for($j in $childrenJoints)
 		{
-			//setKeyframe ($j + ".rx");
-			//setKeyframe ($j + ".ry");
-			//setKeyframe ($j + ".rz");
+
 			setKeyframe {($j)};
 		}
 
-		$i = $i + 1;
+		
+		currentTime $center_frame ;
+		setAttr ($ikhandle + ".ikBlend", 0);
+		setKeyframe { ($ikhandle + ".ikb") };
+
+		currentTime $blend_out_frame ;
+		setAttr ($ikhandle + ".ikBlend", 1);
+		setKeyframe { ($ikhandle + ".ikb") };
+
+		float $out_x = `getAttr ($rootJointName+".translateX")`;
+
+		float $root_rz = `getAttr ($rootJointName + ".rotateZ")`;
+		setAttr ($rootJointName + ".rotateZ") ($root_rz - 360);
+		
+
+		for($j in $childrenJoints)
+		{
+			setKeyframe {($j)};
+		}
+
+
+		//insert key frames for ikhandle weights
+
+		currentTime ($blend_in_frame + 1) ;
+		setAttr ($ikhandle + ".ikBlend", 0);
+		setKeyframe { ($ikhandle + ".ikb") };
+		
+		currentTime ($blend_out_frame - 1) ;
+		setAttr ($ikhandle + ".ikBlend", 0);
+		setKeyframe { ($ikhandle + ".ikb") };
+
+		// fk deform to loa
+
+		currentTime $center_frame;
+
+		float $intersect_position[] = `pointOnCurve -pr $p_in -p $curveName`;
+		//setAttr ($rootJointName + ".translateX") (($in_x + $out_x) / 2);
+		setAttr ($rootJointName + ".translateX") ($intersect_position[0]);
+		setKeyframe {($rootJointName)};
+
+		//print $p;
+		//print "\n";
+		//print $center_frame;
 	}
-
-	*/
-
-
-
 	
-
 }
 
 
