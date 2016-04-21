@@ -1,4 +1,5 @@
 #include "CurveIKCmd.h"
+#include <sstream>
 
 #include <maya/MGlobal.h>
 
@@ -196,34 +197,44 @@ MStatus CurveIKCmd::doIt(const MArgList& args)
 		double boneLength = (curJoint.getTranslation(MSpace::kWorld) - prevJoint.getTranslation(MSpace::kWorld)).length();
 		double wantedBoneLength = (curCurveJointPos - prevJoint.getTranslation(MSpace::kWorld)).length();
 		double scale[] = { wantedBoneLength / boneLength, 1, 1 };
-		prevJoint.scaleBy(scale);
+		prevJoint.setScale(scale);
 
 		MVector boneUnitDir = (curCurveJointPos - prevJoint.getTranslation(MSpace::kWorld)).normal();
 
 		boneUnitDir.normalize();
 		MVector rotAxis = boneUnitDir^MVector(1, 0, 0); rotAxis.normalize();
 		double rotAngle = boneUnitDir.angle(MVector(1, 0, 0));
-
+		std::stringstream stringStream;
+		stringStream << "angleBetween -euler -v1 1 0 0 -v2 " <<
+			boneUnitDir(0) << " " << boneUnitDir(1) << " " << boneUnitDir(2);
+		MString mayaCmd = stringStream.str().c_str();
+		MDoubleArray result;
+		MGlobal::executeCommand( mayaCmd, result );
 		double endJointAngle[3] = { 0, 0, 0 };
-		///////////////////////////////////////////////////////////////////////////////////
-		double x = rotAxis(0); double y = rotAxis(1); double z = rotAxis(2);
-		double s = sin(rotAngle); double c = cos(rotAngle); double t = 1 - c;
-		if ((x*y*t + z*s) > 0.998) { // north pole singularity detected
-			endJointAngle[1] = 2 * atan2(x*sin(rotAngle / 2), cos(rotAngle / 2));
-			endJointAngle[2] = -M_PI / 2;
-			endJointAngle[0] = 0;
-		}
-		else if ((x*y*t + z*s) < -0.998) { // south pole singularity detected
-			endJointAngle[1] = -2 * atan2(x*sin(rotAngle / 2), cos(rotAngle / 2));
-			endJointAngle[2] = M_PI / 2;
-			endJointAngle[0] = 0;
-		}
-		else
+		result.get(endJointAngle);
+		for (size_t i = 0; i < 3; i++)
 		{
-			endJointAngle[1] = atan2(y * s - x * z * t, 1 - (y*y + z*z) * t);
-			endJointAngle[2] = -asin(x * y * t + z * s);
-			endJointAngle[0] = 0;
+			endJointAngle[i] = (M_PI/180.0) * (endJointAngle[i]);
 		}
+		///////////////////////////////////////////////////////////////////////////////////
+		//double x = rotAxis(0); double y = rotAxis(1); double z = rotAxis(2);
+		//double s = sin(rotAngle); double c = cos(rotAngle); double t = 1 - c;
+		//if ((x*y*t + z*s) > 0.998) { // north pole singularity detected
+		//	endJointAngle[1] = 2 * atan2(x*sin(rotAngle / 2), cos(rotAngle / 2));
+		//	endJointAngle[2] = -M_PI / 2;
+		//	endJointAngle[0] = 0;
+		//}
+		//else if ((x*y*t + z*s) < -0.998) { // south pole singularity detected
+		//	endJointAngle[1] = -2 * atan2(x*sin(rotAngle / 2), cos(rotAngle / 2));
+		//	endJointAngle[2] = M_PI / 2;
+		//	endJointAngle[0] = 0;
+		//}
+		//else
+		//{
+		//	endJointAngle[1] = atan2(y * s - x * z * t, 1 - (y*y + z*z) * t);
+		//	endJointAngle[2] = -asin(x * y * t + z * s);
+		//	endJointAngle[0] = 0;
+		//}
 		///////////////////////////////////////////////////////////////////////////////////
 
 		/*
