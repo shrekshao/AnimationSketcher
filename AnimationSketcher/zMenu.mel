@@ -217,7 +217,7 @@ global proc string ApplyAnimation_TranslateOnly()
     string $ikHandleName = $ikHandlesNames[0];
     string $ikSplineName = $ikHandlesNames[2];
 
-    xform -cp $ikSplineName; //Center spline curve pivot
+    //xform -cp $ikSplineName; //Center spline curve pivot
 
     select -r $ikHandleName;
     setAttr ($ikHandleName+".dTwistControlEnable") 1;
@@ -562,7 +562,131 @@ global proc ApplyAnimation()
 }
 
 
+global proc ApplyAnimation_Bounce()
+{
+	//get all joints
+	string $rootJointName = `textField -query -text tf_rootJoint`;
+	string $childrenJoints[] = `listRelatives -ad $rootJointName`;
 
+	string $curveName = `textField -query -text tf_trajectory`;
+	
+	$childrenJoints[size($childrenJoints)] = $rootJointName;		//add root to the list
+
+
+	// trajectory flow path
+	string $ikhandle = ApplyAnimation_TranslateOnly();
+	setAttr ($ikhandle + ".ikFkManipulation", 1);
+
+	// iterate list
+	string $loa_array[] = `textScrollList -q -allItems list_loa`;
+	string $trajectory = `textField -query -text tf_trajectory`;
+	float $spans = `getAttr ($trajectory + ".spans")`;
+
+	
+	//TODO: set total_frames
+	int $blend_frames = `floatSliderGrp -q -v sld_blend`;
+	int $total_frames = `floatSliderGrp -q -v sld_total`;
+
+
+	for ($loa in $loa_array)
+	{
+		string $intersect_node = GetIntersectNode($trajectory, $loa);
+		float $u[] = `getAttr ($intersect_node + ".p1")`;
+
+		float $p = $u[0] / $spans;		// 0 - 1
+
+		//print $u;
+
+		int $center_frame = $p * $total_frames;
+		//$center_frame_array[size($center_frame_array)] = $center_frame;
+		int $blend_in_frame = $center_frame - $blend_frames;
+		if($blend_in_frame <= 0) 
+		{
+			$blend_in_frame = 1;
+		}
+		int $blend_out_frame = $center_frame + $blend_frames;
+
+		//insert key frames for joints transform
+		currentTime $blend_in_frame ;
+		setAttr ($ikhandle + ".ikBlend", 1);
+		setKeyframe { ($ikhandle + ".ikb") };
+
+		//unlimitJointRotation($childrenJoints);
+		
+
+		for($j in $childrenJoints)
+		{
+			//setKeyframe ($j + ".rx");
+			//setKeyframe ($j + ".ry");
+			//setKeyframe ($j + ".rz");
+
+			//setKeyframe ($j + ".tx");
+			//setKeyframe ($j + ".tz");
+
+			setKeyframe {($j)};
+		}
+
+		
+		currentTime $center_frame ;
+		setAttr ($ikhandle + ".ikBlend", 0);
+		setKeyframe { ($ikhandle + ".ikb") };
+
+
+
+		currentTime $blend_out_frame ;
+		setAttr ($ikhandle + ".ikBlend", 1);
+		setKeyframe { ($ikhandle + ".ikb") };
+
+		//unlimitJointRotation($childrenJoints);
+
+		for($j in $childrenJoints)
+		{
+			//setKeyframe ($j + ".rx");
+			//setKeyframe ($j + ".ry");
+			//setKeyframe ($j + ".rz");
+
+			//setKeyframe ($j + ".tx");
+			//setKeyframe ($j + ".tz");
+
+			setKeyframe {($j)};
+		}
+
+
+		//insert key frames for ikhandle weights
+
+		currentTime ($blend_in_frame + 1) ;
+		setAttr ($ikhandle + ".ikBlend", 0);
+		setKeyframe { ($ikhandle + ".ikb") };
+
+		//limitJointRotation($childrenJoints);
+		
+		currentTime ($blend_out_frame - 1) ;
+		setAttr ($ikhandle + ".ikBlend", 0);
+		setKeyframe { ($ikhandle + ".ikb") };
+		
+		//limitJointRotation($childrenJoints);
+		
+
+		// fk deform to loa
+
+		currentTime $center_frame;
+		select -r $loa;
+		DeformToLOA_Pure();
+
+		// set keyframe for each joints
+		for($j in $childrenJoints)
+		{
+			//setKeyframe ($j + ".rx");
+			//setKeyframe ($j + ".ry");
+			//setKeyframe ($j + ".rz");
+
+			//setKeyframe ($j + ".tx");
+			//setKeyframe ($j + ".tz");
+
+			setKeyframe {($j)};
+		}
+	}
+}
 
 
 
@@ -658,7 +782,7 @@ global proc AnimationSketcherMainMenu()
 	button -l "Apply" -command "ApplyAnimation" btn_apply;
 	//button -l "Apply" -command "ApplyAnimation_FlowMotionPath" btn_apply;
 	
-	button -l "Apply_Bounce" -command "ApplyAnimation_TranslateOnly" btn_apply2;
+	button -l "Apply_Bounce" -command "ApplyAnimation_Bounce" btn_apply2;
 
 	button -l "IKNodeTest" -command "ApplyAnimationCpp" btn_ik_node_test;
 	
