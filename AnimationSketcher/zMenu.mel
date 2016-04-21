@@ -217,14 +217,14 @@ global proc string ApplyAnimation_TranslateOnly()
     string $ikHandleName = $ikHandlesNames[0];
     string $ikSplineName = $ikHandlesNames[2];
 
-    //xform -cp $ikSplineName; //Center spline curve pivot
+    xform -cp $ikSplineName; //Center spline curve pivot
 
     select -r $ikHandleName;
     setAttr ($ikHandleName+".dTwistControlEnable") 1;
 
     select -r $ikSplineName $curveName;
     
-	pathAnimation -follow true -fractionMode true -upAxis x -worldUpType "vector" -worldUpVector 0 1 0 -inverseUp false -inverseFront false -bank true -startTimeU `playbackOptions -query -minTime` -endTimeU  `playbackOptions -query -maxTime`;
+	pathAnimation -follow false -fractionMode true -upAxis x -worldUpType "vector" -worldUpVector 0 1 0 -inverseUp false -inverseFront false -bank false -startTimeU `playbackOptions -query -minTime` -endTimeU  `playbackOptions -query -maxTime`;
 
 	return $ikHandleName;
 }
