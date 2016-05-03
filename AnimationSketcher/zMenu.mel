@@ -166,7 +166,92 @@ global proc DeformToLOA()
 	DeformToLOA_Pure();
 }
 
+global string $ikhandle_global;
+global proc DeformToLOA_Blend()
+{
+	global string $ikhandle_global;
+	//print $ikhandle_global;
+	string $ikhandle = $ikhandle_global;
 
+	//TODO: set total_frames
+	int $blend_frames = `floatSliderGrp -q -v sld_blend`;
+
+	//get all joints
+	string $rootJointName = `textField -query -text tf_rootJoint`;
+	string $childrenJoints[] = `listRelatives -ad $rootJointName`;
+	$childrenJoints[size($childrenJoints)] = $rootJointName;		//add root to the list
+
+	//print $childrenJoints;
+	
+	int $center_frame = `currentTime -query`;
+	print $center_frame;
+	int $blend_in_frame = $center_frame - $blend_frames;
+	if($blend_in_frame <= 0) 
+	{
+		$blend_in_frame = 1;
+	}
+	int $blend_out_frame = $center_frame + $blend_frames;
+
+
+
+	//insert key frames for joints transform
+	currentTime $blend_in_frame ;
+	setAttr ($ikhandle + ".ikBlend", 1);
+	setKeyframe { ($ikhandle + ".ikb") };
+
+	for($j in $childrenJoints)
+	{
+		setKeyframe {($j)};
+	}
+
+		
+	currentTime $center_frame ;
+	setAttr ($ikhandle + ".ikBlend", 0);
+	setKeyframe { ($ikhandle + ".ikb") };
+
+
+
+	currentTime $blend_out_frame ;
+	setAttr ($ikhandle + ".ikBlend", 1);
+	setKeyframe { ($ikhandle + ".ikb") };
+
+	for($j in $childrenJoints)
+	{
+		setKeyframe {($j)};
+	}
+
+
+	//insert key frames for ikhandle weights
+
+	currentTime ($blend_in_frame + 1) ;
+	setAttr ($ikhandle + ".ikBlend", 0);
+	setKeyframe { ($ikhandle + ".ikb") };
+
+	//limitJointRotation($childrenJoints);
+		
+	currentTime ($blend_out_frame - 1) ;
+	setAttr ($ikhandle + ".ikBlend", 0);
+	setKeyframe { ($ikhandle + ".ikb") };
+		
+	//limitJointRotation($childrenJoints);
+		
+
+	// fk deform to loa
+
+	currentTime $center_frame;
+	select -cl;
+	select -r `textScrollList -q -selectItem list_loa`;
+	DeformToLOA_Pure();
+
+	// set keyframe for each joints
+	//select -r $childrenJoints;
+	for($j in $childrenJoints)
+	{
+
+		setKeyframe {($j)};
+	}
+	
+}
 
 
 //-----------------------------
@@ -185,6 +270,9 @@ global proc string ApplyAnimation_FlowMotionPath()
     string $ikHandlesNames[] = `ikHandle -sol ikSplineSolver -ns 30`;
     string $ikHandleName = $ikHandlesNames[0];
     string $ikSplineName = $ikHandlesNames[2];
+
+	global string $ikhandle_global;
+	$ikhandle_global = $ikHandleName;
 
     xform -cp $ikSplineName; //Center spline curve pivot
 
@@ -216,6 +304,9 @@ global proc string ApplyAnimation_TranslateOnly()
     string $ikHandlesNames[] = `ikHandle -sol ikSplineSolver -ns 30`;
     string $ikHandleName = $ikHandlesNames[0];
     string $ikSplineName = $ikHandlesNames[2];
+
+	global string $ikhandle_global;
+	$ikhandle_global = $ikHandleName;
 
     //xform -cp $ikSplineName; //Center spline curve pivot
 
@@ -771,6 +862,8 @@ global proc AnimationSketcherMainMenu()
 	button -l "Clean" -command "CleanLOAList" btn_clean_loa;
 
 	button -l "Deform LOA" -command "DeformToLOA" btn_deform_loa;
+
+	button -l "Deform And Blend" -command "DeformToLOA_Blend" btn_deform_blend;
 
 	setParent ..;
 	setParent ..;
